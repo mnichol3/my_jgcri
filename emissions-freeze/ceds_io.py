@@ -419,6 +419,21 @@ def arr_to_csv(arr, out_path):
     
     
     
+def print_full_df(df):
+    pd.set_option('display.max_rows', len(df))
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.width', 2000)
+    pd.set_option('display.float_format', '{:20,.4f}'.format)
+    pd.set_option('display.max_colwidth', -1)
+    print(df)
+    pd.reset_option('display.max_rows')
+    pd.reset_option('display.max_columns')
+    pd.reset_option('display.width')
+    pd.reset_option('display.float_format')
+    pd.reset_option('display.max_colwidth')
+    
+    
+    
     
 def main():
     data_path = r"C:\Users\nich980\data\CEDS_CMIP6_Release_Archive\intermediate-output"

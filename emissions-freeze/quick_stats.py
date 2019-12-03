@@ -11,6 +11,45 @@ import numpy as np
 from os.path import join
 from scipy import stats
 
+import ceds_io
+
+
+def write_stats(ef_df, species, year, f_paths):
+    
+    f_out_name = '{}.{}'.format(species, f_paths['f_out_name'])
+    
+    f_out_abs = join(f_paths['f_out_path'], f_out_name)
+    
+    with open(f_out_abs, 'w') as fh:
+        fh.write('sector,fuel,mean,median,std,sum,min_ef,max_ef')
+        fh.write('\n')
+
+    fuels = ef_df['fuel'].unique().tolist()
+    sectors = ef_df['sector'].unique().tolist()
+    
+    for sector in sectors:
+        ef_df_sector = ef_df[ef_df['sector'] == sector]
+        
+        for fuel in fuels:
+            ef_df_fuel = ef_df_sector[ef_df_sector['fuel'] == fuel]
+            
+            ef_df_subs = ef_df_fuel['X{}'.format(year)]
+   
+            ef_mean = ef_df_subs.mean()
+            ef_median = ef_df_subs.median()
+            ef_std = ef_df_subs.std()
+            ef_sum = ef_df_subs.sum()
+            ef_min = ef_df_subs.min()
+            ef_max = ef_df_subs.max()
+           
+            curr_str = '{},{},{},{},{},{},{},{}'.format(sector, fuel, ef_mean,
+                                                        ef_median, ef_std, ef_sum,
+                                                        ef_min, ef_max)
+           
+            with open(f_out_abs, 'a') as fh:
+                fh.write(curr_str)
+                fh.write('\n')
+
 
 
 def get_outliers_zscore(ef_df, sector, fuel, thresh=3):
@@ -166,42 +205,61 @@ def plot_df(ef_df, sector, fuel, year, species, plt_opts):
 
 def main():
     
+    #################### plot_df ####################
 #    out_path_base = r"C:\Users\nich980\data\e-freeze\dat_out\imgs"
-    out_path_base = r"C:\Users\nich980\data\e-freeze\dat_out\imgs\outliers-markup"
-    f_path = r"C:\Users\nich980\data\CEDS_CMIP6_Release_Archive\intermediate-output"
-    f_name = r"H.CO_total_EFs_extended.csv"
-    
-    year = 1970
-    species = 'CO'
-    
-#    sector = '1A2b_Ind-Comb-Non-ferrous-metals'
+#    out_path_base = r"C:\Users\nich980\data\e-freeze\dat_out\imgs\outliers-markup"
+#    f_path = r"C:\Users\nich980\data\CEDS_CMIP6_Release_Archive\intermediate-output"
+#    f_name = r"H.CO_total_EFs_extended.csv"
+#    
+#    year = 1970
+#    species = 'CO'
+#    
+##    sector = '1A2b_Ind-Comb-Non-ferrous-metals'
+##    fuel = 'hard_coal'
+#    sector = '1A3eii_Other-transp'
 #    fuel = 'hard_coal'
-    sector = '1A3eii_Other-transp'
-    fuel = 'hard_coal'
+#    
+#    plt_opts = {
+#                'show': False,
+#                'save': True,
+#                'out_path_base': '',
+#                'out_path_abs' : out_path_base,
+#                'plot_outliers' : True
+#               }
+#    
+#    f_path_abs = join(f_path, f_name)
+#    
+#    ef_df = pd.read_csv(f_path_abs, sep=",", header=0)
+#    
+##    thresh = 1
+##    
+##    plt_opts['z_thresh'] = thresh
+##    
+##    outliers = get_outliers_zscore(ef_df, sector, fuel, thresh=thresh)
+###    outliers = get_outliers_std(ef_df, sector, fuel)
+##    
+##    for x in outliers:
+##        print(x)
+##    
+##    plot_df(ef_df, sector, fuel, year, species, plt_opts)
     
-    plt_opts = {
-                'show': False,
-                'save': True,
-                'out_path_base': '',
-                'out_path_abs' : out_path_base,
-                'plot_outliers' : True
-               }
+    #################### write stats ####################
+    data_path = r'C:\Users\nich980\data\CEDS_CMIP6_Release_Archive\intermediate-output'
     
-    f_path_abs = join(f_path, f_name)
+    f_paths = {
+            'f_out_path' : r'C:\Users\nich980\data\e-freeze\dat_out\ef_stats',
+            'f_out_name' : 'comb_ef_stats.csv'
+              }
     
-    ef_df = pd.read_csv(f_path_abs, sep=",", header=0)
-    
-    thresh = 1
-    
-    plt_opts['z_thresh'] = thresh
-    
-    outliers = get_outliers_zscore(ef_df, sector, fuel, thresh=thresh)
-#    outliers = get_outliers_std(ef_df, sector, fuel)
-    
-    for x in outliers:
-        print(x)
-    
-    plot_df(ef_df, sector, fuel, year, species, plt_opts)
+    for f in ceds_io.fetch_ef_files(data_path):
+        curr_species = ceds_io.get_species_from_fname(f)
+        
+        print("Processing {}...".format(curr_species))
+        
+        ef_df = ceds_io.read_ef_file(join(data_path, f))
+        ef_df = ceds_io.filter_data_sector(ef_df)
+        
+        write_stats(ef_df, curr_species, 1970, f_paths)
     
     
     

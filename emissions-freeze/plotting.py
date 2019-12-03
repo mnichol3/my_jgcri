@@ -34,10 +34,10 @@ def plot_ef(ef_df, fuels, plt_opts):
     """
     
     print('\nSubsetting DataFrame for years {}-{}\n'.format(1950, 1990))
-    ef_df = validate.subset_yr_span(ef_df, 1970, yr_rng=20)
+    ef_df = ceds_io.subset_yr_span(ef_df, 1970, yr_rng=20)
     
-    isos = validate.get_isos(ef_df)
-    sectors = validate.get_sectors(ef_df)
+    isos = ceds_io.get_isos(ef_df)
+    sectors = ceds_io.get_sectors(ef_df)
     species = ceds_io.get_species_from_fname(plt_opts['f_in'])
 #        isos = validate.get_isos(ef_df)
     
@@ -82,9 +82,9 @@ def _plot_ef(ef_df, sector, fuel, species, plt_opts):
     scatter = []
     iso_list = plt_opts['iso_list']
     
-    ef_df = validate.subset_sector(ef_df, sector)
-    ef_df = validate.subset_fuel(ef_df, fuel)
-    ef_df = validate.subset_iso(ef_df, iso_list)
+    ef_df = ceds_io.subset_sector(ef_df, sector)
+    ef_df = ceds_io.subset_fuel(ef_df, fuel)
+    ef_df = ceds_io.subset_iso(ef_df, iso_list)
     
     ef_df = ef_df.drop(['iso', 'sector', 'fuel', 'units'], axis=1)
     
@@ -137,9 +137,9 @@ def _plot_ef(ef_df, sector, fuel, species, plt_opts):
 def plot_ef_distro(ef_df, year, fuels, plt_opts):
     
     # Get a dataframe where the only year data column is 'year'
-    ef_df = validate.subset_yr(ef_df, year)
+    ef_df = ceds_io.subset_yr(ef_df, year)
     
-    sectors = validate.get_sectors(ef_df)
+    sectors = ceds_io.get_sectors(ef_df)
     species = ceds_io.get_species_from_fname(plt_opts['f_in'])
     
     if (species == -1):
@@ -173,8 +173,8 @@ def _plot_ef_distro(ef_df, year, sector, fuel, species, plt_opts):
     """
     fig, ax = plt.subplots(figsize=(8, 8))
     
-    ef_df = validate.subset_sector(ef_df, sector)
-    ef_df = validate.subset_fuel(ef_df, fuel)
+    ef_df = ceds_io.subset_sector(ef_df, sector)
+    ef_df = ceds_io.subset_fuel(ef_df, fuel)
     
     isos = list(ef_df['iso'])
     
@@ -199,7 +199,7 @@ def _plot_ef_distro(ef_df, year, sector, fuel, species, plt_opts):
     
     font_size = 10
     
-    plt.title("Emission Factor for {} - {}".format(year, species), loc='left', fontsize=font_size)
+    plt.title("Emission Factors for {} - {}".format(year, species), loc='left', fontsize=font_size)
     plt.title("Sector: {}, Fuel: {}".format(sector, fuel), loc='right', fontsize=font_size)
     
     plt.axis([0, len(isos), 0, 1.0])
@@ -218,6 +218,65 @@ def _plot_ef_distro(ef_df, year, sector, fuel, species, plt_opts):
     
     plt.close()
     
+    
+    
+def plot_histo(ef_df, year, fuels, plt_opts):
+    
+#    ef_df = ceds_io.subset_yr(ef_df, year)
+    
+    try:
+        num_bins = plt_opts['num_bins']
+    except:
+        print('num_bins not set. Defaulting to 10')
+        num_bins = 10
+    
+    sectors = ceds_io.get_sectors(ef_df)
+    species = ceds_io.get_species_from_fname(plt_opts['f_in'])
+    
+    if (species == -1):
+            raise ValueError("Illegal species value encountered for {}".format(plt_opts['f_in']))
+            
+    out_path = join(plt_opts['out_path_base'], "histo", str(year), species)
+    plt_opts['out_path_abs'] = out_path
+    
+    if (not isdir(out_path)):
+            makedirs(out_path)
+            
+    for sector in sectors:
+            for fuel in fuels:
+                print("Plotting histogram -- {} -- {} -- {} -- {} --".format(year, species, sector, fuel))
+                _plot_histo(ef_df, year, sector, fuel, species, num_bins, plt_opts)
+
+
+
+def _plot_histo(ef_df, year, sector, fuel, species, num_bins, plt_opts):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    
+    font_size = 10
+    
+    ef_df = ceds_io.subset_sector(ef_df, sector)
+    ef_df = ceds_io.subset_fuel(ef_df, fuel)
+    
+    ef_data = ef_df['X{}'.format(year)]
+    
+    plt.hist(ef_data, num_bins, facecolor='blue', alpha=0.5)
+    
+    plt.title("Emission Factors for {} - {}".format(year, species), loc='left', fontsize=font_size)
+    plt.title("Sector: {}, Fuel: {}".format(sector, fuel), loc='right', fontsize=font_size)
+    
+    plt.xlabel("Emission Factor")
+    plt.ylabel("Frequency")
+    plt.tight_layout()
+
+    if (plt_opts['show'] == True):
+        plt.show()
+        
+    if (plt_opts['save']):
+        f_name = "{}.{}.{}.png".format(species, sector, fuel)
+        f_path = join(plt_opts['out_path_abs'], f_name)
+        plt.savefig(f_path, dpi=300)
+    
+    plt.close()
     
     
     
@@ -239,7 +298,8 @@ def main():
                 'save': True,
                 'out_path_base': out_path_base,
                 'yr_rng': (0,0),
-                'f_in' : ''
+                'f_in' : '',
+                'num_bins': 20
                }
     
     for f in ef_files:
@@ -250,8 +310,11 @@ def main():
     
         ef_df = ceds_io.read_ef_file(ef_path)
         
-        plot_ef_distro(ef_df, 1970, fuels, plt_opts)
-
+        ef_df = ceds_io.filter_data_sector(ef_df)
+        
+#        plot_ef_distro(ef_df, 1970, fuels, plt_opts)
+        
+        plot_histo(ef_df, 1970, fuels, plt_opts)
     
 if __name__ == '__main__':
     main()
