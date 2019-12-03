@@ -259,7 +259,7 @@ def _plot_histo(ef_df, year, sector, fuel, species, num_bins, plt_opts):
     
     ef_data = ef_df['X{}'.format(year)]
     
-    plt.hist(ef_data, num_bins, facecolor='blue', alpha=0.5)
+    plt.hist(ef_data, num_bins, facecolor='blue', edgecolor='black', alpha=0.5)
     
     plt.title("Emission Factors for {} - {}".format(year, species), loc='left', fontsize=font_size)
     plt.title("Sector: {}, Fuel: {}".format(sector, fuel), loc='right', fontsize=font_size)
