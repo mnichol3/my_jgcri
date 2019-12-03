@@ -6,12 +6,16 @@ Created on Wed Nov 20 13:01:30 2019
 """
 
 import matplotlib.pyplot as plt
+import numpy as np
+import scipy.stats
 
 from os.path import join, isdir
 from os import makedirs
 
 import validate
 import ceds_io
+
+from quick_stats import get_outliers_zscore
 
 from sys import exit
 
@@ -144,8 +148,13 @@ def plot_ef_distro(ef_df, year, fuels, plt_opts):
     
     if (species == -1):
             raise ValueError("Illegal species value encountered for {}".format(plt_opts['f_in']))
-            
-    out_path = join(plt_opts['out_path_base'], "distro", str(year), species)
+    
+    if (plt_opts['mark_outliers']):
+        dir_name = "distro-marked"
+    else:
+        dir_name = "distro"
+        
+    out_path = join(plt_opts['out_path_base'], dir_name, str(year), species)
     plt_opts['out_path_abs'] = out_path
     
     if (not isdir(out_path)):
@@ -178,6 +187,7 @@ def _plot_ef_distro(ef_df, year, sector, fuel, species, plt_opts):
     
     isos = list(ef_df['iso'])
     
+    # Write the ISO strings and their representative ints to text file
 #    with open(r"C:\Users\nich980\data\e-freeze\dat_out\iso_list.txt", "w") as fh:
 #        for idx, iso in enumerate(isos):
 #            str_idx = str(idx)
@@ -185,24 +195,30 @@ def _plot_ef_distro(ef_df, year, sector, fuel, species, plt_opts):
 #    
 #    exit(0)
     
-    x = [i for i in range(len(isos))]
     
-#    ef_df = ef_df.drop(['iso', 'sector', 'fuel', 'units'], axis=1)
+    x = [i for i in range(len(isos))]
     
     y = list(ef_df['X{}'.format(year)])
     
-#    for idx, row in ef_df.iterrows():
-#        y = row.values
-#        curr_scat = ax.scatter(x, y, s=2)
-#        scatter.append(curr_scat)
-    ax.scatter(x, y, s=2)
+    ax.scatter(x, y, s=8, zorder=1)
+    
+    if (plt_opts['mark_outliers']):
+        outliers = get_outliers_zscore(ef_df, sector, fuel, thresh=plt_opts['z_thresh'])
+        
+        x_out = [i[2] for i in outliers]
+        y_out = [j[1] for j in outliers]
+        
+        ax.scatter(x_out, y_out, marker="x", color="r", s=16, zorder=2)
     
     font_size = 10
     
     plt.title("Emission Factors for {} - {}".format(year, species), loc='left', fontsize=font_size)
     plt.title("Sector: {}, Fuel: {}".format(sector, fuel), loc='right', fontsize=font_size)
     
-    plt.axis([0, len(isos), 0, 1.0])
+    max_ef= max(y)
+    x_max = max_ef + (max_ef * 0.1)
+    
+    plt.axis([0, len(isos), 0, x_max])
     
     plt.xlabel("ISO")
     plt.ylabel("Emission Factor")
@@ -227,8 +243,8 @@ def plot_histo(ef_df, year, fuels, plt_opts):
     try:
         num_bins = plt_opts['num_bins']
     except:
-        print('num_bins not set. Defaulting to 10')
-        num_bins = 10
+        print('num_bins not set. Defaulting to 20')
+        num_bins = 20
     
     sectors = ceds_io.get_sectors(ef_df)
     species = ceds_io.get_species_from_fname(plt_opts['f_in'])
@@ -259,10 +275,12 @@ def _plot_histo(ef_df, year, sector, fuel, species, num_bins, plt_opts):
     
     ef_data = ef_df['X{}'.format(year)]
     
-    plt.hist(ef_data, num_bins, facecolor='blue', edgecolor='black', alpha=0.5)
+    n, _, _ = plt.hist(ef_data, num_bins, facecolor='blue', edgecolor='black', alpha=0.5)
     
     plt.title("Emission Factors for {} - {}".format(year, species), loc='left', fontsize=font_size)
     plt.title("Sector: {}, Fuel: {}".format(sector, fuel), loc='right', fontsize=font_size)
+    
+#    plt.axis([0, max(n), 0, 1.0])
     
     plt.xlabel("Emission Factor")
     plt.ylabel("Frequency")
@@ -278,6 +296,133 @@ def _plot_histo(ef_df, year, sector, fuel, species, num_bins, plt_opts):
     
     plt.close()
     
+    
+    
+def plot_prob(ef_df, year, fuels, plt_opts):
+    
+    sectors = ceds_io.get_sectors(ef_df)
+    species = ceds_io.get_species_from_fname(plt_opts['f_in'])
+    
+    try:
+        num_bins = plt_opts['num_bins']
+    except:
+        print('num_bins not set. Defaulting to 20')
+        num_bins = 20
+    
+    if (species == -1):
+            raise ValueError("Illegal species value encountered for {}".format(plt_opts['f_in']))
+            
+    out_path = join(plt_opts['out_path_base'], 'prob', str(year), species)
+    plt_opts['out_path_abs'] = out_path
+    
+    if (not isdir(out_path)):
+            makedirs(out_path)
+            
+    for sector in sectors:
+            for fuel in fuels:
+                print("Plotting histogram -- {} -- {} -- {} -- {} --".format(year, species, sector, fuel))
+                _plot_prob(ef_df, year, sector, fuel, species, num_bins, plt_opts)
+                
+                
+                
+def _plot_prob(ef_df, year, sector, fuel, species, num_bins, plt_opts):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    
+    font_size = 10
+    
+    ef_df = ceds_io.subset_sector(ef_df, sector)
+    ef_df = ceds_io.subset_fuel(ef_df, fuel)
+    
+    ef_data = ef_df['X{}'.format(year)]
+    
+    counts, start, dx, _ = scipy.stats.cumfreq(ef_data, numbins=num_bins)
+
+    x = np.arange(counts.size) * dx + start
+    
+    plt.plot(x, counts, 'ro')
+    
+    plt.title("Emission Factors for {} - {}".format(year, species), loc='left', fontsize=font_size)
+    plt.title("Sector: {}, Fuel: {}".format(sector, fuel), loc='right', fontsize=font_size)
+    
+    plt.xlabel('Emission Factor')
+    plt.ylabel('Cumulative Frequency')
+    plt.tight_layout()
+
+    if (plt_opts['show'] == True):
+        plt.show()
+        
+    if (plt_opts['save']):
+        f_name = "{}.{}.{}.png".format(species, sector, fuel)
+        f_path = join(plt_opts['out_path_abs'], f_name)
+        plt.savefig(f_path, dpi=300)
+    
+    plt.close()
+    
+    
+    
+def plot_prob_histo(ef_df, year, fuels, plt_opts):
+    try:
+        num_bins = plt_opts['num_bins']
+    except:
+        print('num_bins not set. Defaulting to 20')
+        num_bins = 20
+    
+    sectors = ceds_io.get_sectors(ef_df)
+    species = ceds_io.get_species_from_fname(plt_opts['f_in'])
+    
+    if (species == -1):
+            raise ValueError("Illegal species value encountered for {}".format(plt_opts['f_in']))
+            
+    out_path = join(plt_opts['out_path_base'], "prob-histo", str(year), species)
+    plt_opts['out_path_abs'] = out_path
+    
+    if (not isdir(out_path)):
+            makedirs(out_path)
+            
+    for sector in sectors:
+            for fuel in fuels:
+                print("Plotting histogram -- {} -- {} -- {} -- {} --".format(year, species, sector, fuel))
+                _plot_prob_histo(ef_df, year, sector, fuel, species, num_bins, plt_opts)
+                
+                
+                
+def _plot_prob_histo(ef_df, year, sector, fuel, species, num_bins, plt_opts):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    
+    font_size = 10
+    
+    ef_df = ceds_io.subset_sector(ef_df, sector)
+    ef_df = ceds_io.subset_fuel(ef_df, fuel)
+    
+    ef_data = ef_df['X{}'.format(year)]
+    
+    ef_data = ef_df['X{}'.format(year)]
+    
+    counts, start, dx, _ = scipy.stats.cumfreq(ef_data, numbins=num_bins)
+    x = np.arange(counts.size) * dx + start
+    
+    n, _, _ = plt.hist(ef_data, num_bins, facecolor='blue', edgecolor='black', alpha=0.5)
+    
+    plt.plot(x, counts, '-ro')
+    
+    plt.title("Emission Factors for {} - {}".format(year, species), loc='left', fontsize=font_size)
+    plt.title("Sector: {}, Fuel: {}".format(sector, fuel), loc='right', fontsize=font_size)
+    
+    plt.xlabel('Emission Factor')
+    plt.ylabel('Cumulative Frequency')
+#    plt.legend(loc='best')
+    plt.tight_layout()
+
+    if (plt_opts['show'] == True):
+        plt.show()
+        
+    if (plt_opts['save']):
+        f_name = "{}.{}.{}.png".format(species, sector, fuel)
+        f_path = join(plt_opts['out_path_abs'], f_name)
+        plt.savefig(f_path, dpi=300)
+    
+    plt.close()
+  
     
     
 def main():
@@ -298,8 +443,10 @@ def main():
                 'save': True,
                 'out_path_base': out_path_base,
                 'yr_rng': (0,0),
+                'mark_outliers': True,
+                'z_thresh': 3,
                 'f_in' : '',
-                'num_bins': 20
+                'num_bins': 50
                }
     
     for f in ef_files:
@@ -312,9 +459,14 @@ def main():
         
         ef_df = ceds_io.filter_data_sector(ef_df)
         
-#        plot_ef_distro(ef_df, 1970, fuels, plt_opts)
+        plot_ef_distro(ef_df, 1970, fuels, plt_opts)
         
-        plot_histo(ef_df, 1970, fuels, plt_opts)
+#        plot_histo(ef_df, 1970, fuels, plt_opts)
+        
+#        plot_prob(ef_df, 1970, fuels, plt_opts)
+        
+#        plot_prob_histo(ef_df, 1970, fuels, plt_opts)
+        
     
 if __name__ == '__main__':
     main()

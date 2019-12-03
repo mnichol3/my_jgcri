@@ -79,7 +79,7 @@ def get_outliers_zscore(ef_df, sector, fuel, thresh=3):
     ef_list = ef_df['X1970'].tolist()
     outliers = []
     
-    print("Z-score thresh: {}".format(thresh))
+#    print("Z-score thresh: {}".format(thresh))
     
     score = np.abs(stats.zscore(ef_list))
     
