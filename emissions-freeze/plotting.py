@@ -15,7 +15,7 @@ from os import makedirs
 import validate
 import ceds_io
 
-from quick_stats import get_outliers_zscore
+from quick_stats import get_outliers_zscore, get_outliers_iqr
 
 from sys import exit
 
@@ -154,7 +154,7 @@ def plot_ef_distro(ef_df, year, fuels, plt_opts):
     else:
         dir_name = "distro"
         
-    out_path = join(plt_opts['out_path_base'], dir_name, str(year), species)
+    out_path = join(plt_opts['out_path_base'], dir_name, '{}-iqr_2.0'.format(str(year)), species)
     plt_opts['out_path_abs'] = out_path
     
     if (not isdir(out_path)):
@@ -164,8 +164,8 @@ def plot_ef_distro(ef_df, year, fuels, plt_opts):
             for fuel in fuels:
                 print("Plotting distro -- {} -- {} -- {} -- {} --".format(year, species, sector, fuel))
                 _plot_ef_distro(ef_df, year, sector, fuel, species, plt_opts)
-    
-
+               
+                
 
 def _plot_ef_distro(ef_df, year, sector, fuel, species, plt_opts):
     """
@@ -203,7 +203,8 @@ def _plot_ef_distro(ef_df, year, sector, fuel, species, plt_opts):
     ax.scatter(x, y, s=8, zorder=1)
     
     if (plt_opts['mark_outliers']):
-        outliers = get_outliers_zscore(ef_df, sector, fuel, thresh=plt_opts['z_thresh'])
+#        outliers = get_outliers_zscore(ef_df, sector, fuel, thresh=plt_opts['z_thresh'])
+        outliers = get_outliers_iqr(ef_df, sector, fuel, outlier_const=2)
         
         x_out = [i[2] for i in outliers]
         y_out = [j[1] for j in outliers]
@@ -444,7 +445,7 @@ def main():
                 'out_path_base': out_path_base,
                 'yr_rng': (0,0),
                 'mark_outliers': True,
-                'z_thresh': 3,
+                'z_thresh': 2,
                 'f_in' : '',
                 'num_bins': 50
                }
@@ -460,6 +461,7 @@ def main():
         ef_df = ceds_io.filter_data_sector(ef_df)
         
         plot_ef_distro(ef_df, 1970, fuels, plt_opts)
+
         
 #        plot_histo(ef_df, 1970, fuels, plt_opts)
         

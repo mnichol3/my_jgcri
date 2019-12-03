@@ -138,6 +138,52 @@ def get_outliers_std(ef_df, sector, fuel):
 
 
 
+def get_outliers_iqr(ef_df, sector, fuel, outlier_const=1.5):
+    """
+    IQR method from 
+    https://www.dasca.org/world-of-big-data/article/identifying-and-removing-outliers-using-python-packages
+    
+     Parameters
+    ----------
+    ef_df : Pandas DataFrame
+        DataFrame containing an emission factors file
+    sector : str
+        CEDS emisions sector to subset
+    fuel : str
+        CEDS fuel to subset
+        
+    Returns
+    -------
+    outliers : list of tuple - (str, float)
+        ISOs and their respective EFs that have been identified as outliers
+    """
+    outliers = []
+    
+    ef_df = ef_df[ef_df['sector'] == sector]
+    ef_df = ef_df[ef_df['fuel'] == fuel]
+    
+    isos = ef_df['iso'].tolist()
+    ef_list = ef_df['X1970'].tolist()
+    
+    upper_quartile = np.percentile(ef_list, 75)
+    lower_quartile = np.percentile(ef_list, 25)
+    
+#    print("Lower quartile: {}".format(lower_quartile))
+#    print("Upper quartile: {}".format(upper_quartile))
+    
+    IQR = (upper_quartile - lower_quartile) * outlier_const
+
+    upper_limit = upper_quartile + IQR
+    lower_limit = lower_quartile - IQR
+    
+    for idx, ef in enumerate(ef_list):
+        if (ef > upper_limit or ef < lower_limit):
+            outliers.append((isos[idx], ef, idx))
+            
+    return outliers
+
+
+
 def plot_df(ef_df, sector, fuel, year, species, plt_opts):
     """
     Make a scatter plot of an EF dataframe
@@ -263,5 +309,5 @@ def main():
     
     
     
-if __name__ == '__main__':
-    main()
+#if __name__ == '__main__':
+#    main()
