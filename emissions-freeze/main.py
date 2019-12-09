@@ -18,6 +18,8 @@ from sys import exit
 
 
 def main():
+    num_outlier_iters = 1
+    
     out_path_base = r"C:\Users\nich980\data\e-freeze\dat_out\imgs"
     
     data_path = r"C:\Users\nich980\data\CEDS_CMIP6_Release_Archive\intermediate-output"
@@ -57,7 +59,8 @@ def main():
     # Calculate the median of the EF values
     ef_median = quick_stats.get_ef_median(ef_obj)
     
-    for i in range(2):
+    # Use num_outlier_iters + 1 bc of how range() handles the upper bound
+    for i in range(num_outlier_iters + 1):
     
         ef_median = quick_stats.get_ef_median(ef_obj)
         
@@ -77,8 +80,7 @@ def main():
     
     year_strs = ['X{}'.format(yr) for yr in range(1970, int(max_yr[1:]) + 1)]
     
-    for year in year_strs:
-        result_df = ceds_io.reconstruct_ef_df(ef_df, ef_obj, year_str=year)
+    result_df = ceds_io.reconstruct_ef_df(ef_df, ef_obj, year_strs)
         
     f_out = r"C:\Users\nich980\data\e-freeze\dat_out\ef_files"
     f_out = join(f_out, f_name)
