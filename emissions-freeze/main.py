@@ -40,6 +40,8 @@ def main():
     
     ef_df = ceds_io.read_ef_file(join(data_path, f_name))
     
+    max_yr = ef_df.columns.values.tolist()[-1]
+    
     # Filter out all non-combustion sectors
 #    ef_df = ceds_io.filter_data_sector(ef_df)      # get_sectors() already does this
     
@@ -71,7 +73,18 @@ def main():
         for olr in outliers:
             ef_obj.ef_data[olr[2]] = ef_median
     
-    quick_stats.plot_df(ef_obj, plt_opts)
+    #quick_stats.plot_df(ef_obj, plt_opts)
+    
+    year_strs = ['X{}'.format(yr) for yr in range(1970, int(max_yr[1:]) + 1)]
+    
+    for year in year_strs:
+        result_df = ceds_io.reconstruct_ef_df(ef_df, ef_obj, year_str=year)
+        
+    f_out = r"C:\Users\nich980\data\e-freeze\dat_out\ef_files"
+    f_out = join(f_out, f_name)
+    
+    print('Writing final DataFrame to: {}'.format(f_out))
+    result_df.to_csv(f_out, sep=',', header=True, index=False)
     
     
     

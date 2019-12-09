@@ -13,6 +13,7 @@ class EFSubset:
         self.fuel       = fuel
         self.species    = species
         self.year       = year
+        self.year_str   = 'X{}'.format(year)
         self.isos, self.ef_data = self.subset_df(ef_df)
         
         

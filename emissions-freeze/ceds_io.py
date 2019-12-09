@@ -403,6 +403,23 @@ def filter_data_sector(df):
     df_filtered = df[(df['sector'].str.contains(sec_pattern)) & (df['sector'].str[:5] != sec_exclude)]
     
     return df_filtered
+
+
+
+def reconstruct_ef_df(ef_df_actual, ef_obj, year_str=None):
+    sector = ef_obj.sector
+    fuel   = ef_obj.fuel
+    
+    if (year_str == None):
+        year_str = ef_obj.year_str
+    
+    print('Reconstructing EF DataFrame for: {}'.format(year_str[1:]))
+    for idx, iso in enumerate(ef_obj.isos):
+        # df.loc[df[<some_column_name>] == <condition>, [<another_column_name>]] = <value_to_add>
+        ef_df_actual.loc[(ef_df_actual['iso'] == iso) & (ef_df_actual['sector'] == sector) &
+                         (ef_df_actual['fuel'] == fuel), [year_str]] = ef_obj.ef_data[idx]
+    
+    return ef_df_actual
     
     
     
