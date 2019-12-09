@@ -12,6 +12,8 @@ from os.path import join
 from scipy import stats
 
 import ceds_io
+import efsubset
+
 
 
 def write_stats(ef_df, species, year, f_paths):
@@ -52,18 +54,15 @@ def write_stats(ef_df, species, year, f_paths):
 
 
 
-def get_outliers_zscore(ef_df, sector, fuel, thresh=3):
+def get_outliers_zscore(efsubset_obj, thresh=3):
     """
     Identify outliers using their Z-Scores
     
     Parameters
     ----------
-    ef_df : Pandas DataFrame
-        DataFrame containing an emission factors file
-    sector : str
-        CEDS emisions sector to subset
-    fuel : str
-        CEDS fuel to subset
+    efsubset_obj : EFSubset object
+    thresh : int, optional
+        Absolute value of the Z-score threshold used to identify outliers
         
     Returns
     -------
@@ -71,28 +70,22 @@ def get_outliers_zscore(ef_df, sector, fuel, thresh=3):
         ISOs and their respective EFs & z-scores that have been identified as outliers
     """
     
-    # Get a subset of the sector & fuel we're interested in
-    ef_df = ef_df[ef_df['sector'] == sector]
-    ef_df = ef_df[ef_df['fuel'] == fuel]
-    
-    isos = ef_df['iso'].tolist()
-    ef_list = ef_df['X1970'].tolist()
     outliers = []
     
 #    print("Z-score thresh: {}".format(thresh))
     
-    score = np.abs(stats.zscore(ef_list))
+    score = np.abs(stats.zscore(efsubset_obj.ef_data))
     
     bad_z = np.where(score > thresh)[0]
     
     for z_idx in bad_z:
-        outliers.append((isos[z_idx], ef_list[z_idx], z_idx))
+        outliers.append((efsubset_obj.isos[z_idx], efsubset_obj.ef_data[z_idx], z_idx))
     
     return outliers
 
 
 
-def get_outliers_std(ef_df, sector, fuel):
+def get_outliers_std(efsubset_obj):
     """
     Identify outliers using the Standard Deviation Method
     
@@ -101,12 +94,7 @@ def get_outliers_std(ef_df, sector, fuel):
     
     Parameters
     ----------
-    ef_df : Pandas DataFrame
-        DataFrame containing an emission factors file
-    sector : str
-        CEDS emisions sector to subset
-    fuel : str
-        CEDS fuel to subset
+    efsubset_obj : EFSubset object
         
     Returns
     -------
@@ -115,42 +103,31 @@ def get_outliers_std(ef_df, sector, fuel):
     """
     outliers = []
     
-    # Get a subset of the sector & fuel we're interested in
-    ef_df = ef_df[ef_df['sector'] == sector]
-    ef_df = ef_df[ef_df['fuel'] == fuel]
-    
-    isos = ef_df['iso'].tolist()
-    ef_list = ef_df['X1970'].tolist()
     outliers = []
     
-    ef_std = np.std(ef_list)
-    ef_mean = np.mean(ef_list)
+    ef_std = np.std(efsubset_obj.ef_data)
+    ef_mean = np.mean(efsubset_obj.ef_data)
     cutoff = ef_std * 3
     
     limit_lower = ef_mean - cutoff
     limit_upper = ef_mean + cutoff
     
-    for idx, ef in enumerate(ef_list):
+    for idx, ef in enumerate(efsubset_obj.ef_data):
         if ((ef > limit_upper) or (ef < limit_lower)):
-            outliers.append((isos[idx], ef))
+            outliers.append((efsubset_obj.isos[idx], ef))
     
     return outliers
 
 
 
-def get_outliers_iqr(ef_df, sector, fuel, outlier_const=1.5):
+def get_outliers_iqr(efsubset_obj, outlier_const=1.5):
     """
     IQR method from 
     https://www.dasca.org/world-of-big-data/article/identifying-and-removing-outliers-using-python-packages
     
-     Parameters
+    Parameters
     ----------
-    ef_df : Pandas DataFrame
-        DataFrame containing an emission factors file
-    sector : str
-        CEDS emisions sector to subset
-    fuel : str
-        CEDS fuel to subset
+    efsubset_obj : EFSubset object
         
     Returns
     -------
@@ -159,14 +136,8 @@ def get_outliers_iqr(ef_df, sector, fuel, outlier_const=1.5):
     """
     outliers = []
     
-    ef_df = ef_df[ef_df['sector'] == sector]
-    ef_df = ef_df[ef_df['fuel'] == fuel]
-    
-    isos = ef_df['iso'].tolist()
-    ef_list = ef_df['X1970'].tolist()
-    
-    upper_quartile = np.percentile(ef_list, 75)
-    lower_quartile = np.percentile(ef_list, 25)
+    upper_quartile = np.percentile(efsubset_obj.ef_data, 75)
+    lower_quartile = np.percentile(efsubset_obj.ef_data, 25)
     
 #    print("Lower quartile: {}".format(lower_quartile))
 #    print("Upper quartile: {}".format(upper_quartile))
@@ -176,22 +147,36 @@ def get_outliers_iqr(ef_df, sector, fuel, outlier_const=1.5):
     upper_limit = upper_quartile + IQR
     lower_limit = lower_quartile - IQR
     
-    for idx, ef in enumerate(ef_list):
+    for idx, ef in enumerate(efsubset_obj.ef_data):
         if (ef > upper_limit or ef < lower_limit):
-            outliers.append((isos[idx], ef, idx))
+            outliers.append((efsubset_obj.isos[idx], ef, idx))
             
     return outliers
 
 
 
-def plot_df(ef_df, sector, fuel, year, species, plt_opts):
+def get_boxcox(efsubset_obj):
+    """
+    Parameters
+    ----------
+    efsubset_obj : EFSubset object
+    
+    """
+    
+    
+    
+    
+
+
+
+def plot_df(efsubset_obj, plt_opts):
     """
     Make a scatter plot of an EF dataframe
     
     Parameters
     -----------
     ef_df : Pandas DataFrame
-        DataFrame containing an emission factors file
+        DataFrame containing data from an emission factors file
     sector : str
         CEDS emisions sector to subset
     fuel : str
@@ -207,19 +192,13 @@ def plot_df(ef_df, sector, fuel, year, species, plt_opts):
     
     fig, ax = plt.subplots(figsize=(8, 8))
     
-    ef_df = ef_df[ef_df['sector'] == sector]
-    ef_df = ef_df[ef_df['fuel'] == fuel]
-    
-    isos = ef_df['iso'].tolist()
-    ef_list = ef_df['X{}'.format(year)].tolist()
-    
-    x = [i for i in range(len(isos))]
-    y = ef_list
+    x = [i for i in range(len(efsubset_obj.isos))]
+    y = efsubset_obj.ef_data
     
     ax.scatter(x, y, s=8)
     
     if (plt_opts['plot_outliers'] == True):
-        outliers = get_outliers_zscore(ef_df, sector, fuel, thresh=plt_opts['z_thresh'])
+        outliers = get_outliers_zscore(efsubset_obj, thresh=plt_opts['z_thresh'])
         
         x_out = [i[2] for i in outliers]
         y_out = [j[1] for j in outliers]
@@ -228,10 +207,13 @@ def plot_df(ef_df, sector, fuel, year, species, plt_opts):
     
     font_size = 10
     
-    plt.title("Emission Factor for {} - {}".format(year, species), loc='left', fontsize=font_size)
-    plt.title("Sector: {}, Fuel: {}".format(sector, fuel), loc='right', fontsize=font_size)
+    plt.title("Emission Factor for {} - {}".format(efsubset_obj.year, efsubset_obj.species),
+              loc='left', fontsize=font_size)
     
-    plt.axis([0, len(isos), 0, 2])
+    plt.title("Sector: {}, Fuel: {}".format(efsubset_obj.sector, efsubset_obj.fuel),
+              loc='right', fontsize=font_size)
+    
+    plt.axis([0, len(efsubset_obj.isos), 0, 2])
     
     plt.xlabel("ISO")
     plt.ylabel("Emission Factor")
@@ -241,7 +223,7 @@ def plot_df(ef_df, sector, fuel, year, species, plt_opts):
         plt.show()
         
     if (plt_opts['save']):
-        f_name = "{}.{}.{}.png".format(species, sector, fuel)
+        f_name = "{}.{}.{}.png".format(efsubset_obj.species, efsubset_obj.sector, efsubset_obj.fuel)
         f_path = join(plt_opts['out_path_abs'], f_name)
         plt.savefig(f_path, dpi=300)
     
