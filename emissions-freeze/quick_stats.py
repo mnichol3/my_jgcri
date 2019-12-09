@@ -54,6 +54,14 @@ def write_stats(ef_df, species, year, f_paths):
 
 
 
+
+def get_ef_median(efsubset_obj):
+    from statistics import median
+    med = median(efsubset_obj.ef_data)
+    return med
+
+
+
 def get_outliers_zscore(efsubset_obj, thresh=3):
     """
     Identify outliers using their Z-Scores
@@ -161,13 +169,32 @@ def get_boxcox(efsubset_obj):
     ----------
     efsubset_obj : EFSubset object
     
+    Return
+    ------
+    xt : ndarray
+        Box-Cox power transformed array
+    lam : float
+        The lambda that maximizes the log-likelihood function
     """
+    data = np.asarray(efsubset_obj.ef_data)
+    
+    try:
+        xt, lam = stats.boxcox(data)
+    except:
+        # ValueError: Data must be positive
+        # Temporarily discarding the 0, and then using -1/λ for the transformed value of 0
+        pos_data = data[data > 0]
+        
+        x, lam = stats.boxcox(pos_data)
+        
+        xt = np.empty_like(data)
+        
+        xt[data > 0] = x
+        xt[data == 0] = -1/lam
+    
+    return (xt, lam)
     
     
-    
-    
-
-
 
 def plot_df(efsubset_obj, plt_opts):
     """
@@ -199,9 +226,15 @@ def plot_df(efsubset_obj, plt_opts):
     
     if (plt_opts['plot_outliers'] == True):
         outliers = get_outliers_zscore(efsubset_obj, thresh=plt_opts['z_thresh'])
+#        import copy
+#        boxcox, lam = get_boxcox(efsubset_obj)
+#        ef_obj_boxcox = copy.deepcopy(efsubset_obj)
+#        ef_obj_boxcox.ef_data = boxcox
+#        outliers = get_outliers_zscore(ef_obj_boxcox, thresh=plt_opts['z_thresh'])
         
         x_out = [i[2] for i in outliers]
         y_out = [j[1] for j in outliers]
+#        y_out = [y[i] for i in x_out]
         
         ax.scatter(x_out, y_out, marker="x", color="r", s=16)
     
@@ -213,7 +246,8 @@ def plot_df(efsubset_obj, plt_opts):
     plt.title("Sector: {}, Fuel: {}".format(efsubset_obj.sector, efsubset_obj.fuel),
               loc='right', fontsize=font_size)
     
-    plt.axis([0, len(efsubset_obj.isos), 0, 2])
+#    plt.axis([0, len(efsubset_obj.isos), 0, 2])
+    plt.axis([0, len(efsubset_obj.isos), 0, 1])
     
     plt.xlabel("ISO")
     plt.ylabel("Emission Factor")
