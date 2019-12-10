@@ -166,15 +166,15 @@ def main():
         f_out = join(f_out, f_name)
         
         main_log.info("Writing resulting {} DataFrame to file".format(species))
+        species_log.info("Writing resulting DataFrame to file")
         
         print('Writing final {} DataFrame to: {}'.format(species, f_out))
         ef_df.to_csv(f_out, sep=',', header=True, index=False)
         main_log.info("DataFrame written to {}\n".format(f_out))
+        species_log.info("DataFrame written to {}\n".format(f_out))
         
     # End EF file for-loop
-    main_log.info("Finished processing all species")
-    main_log.info("Goodbye")
-    
+    main_log.info("Finished processing all species...Goodbye")
     
     
 #    import pandas as pd
