@@ -8,6 +8,7 @@ This file holds I/O functions for CEDS/EMIPS data files
 """
 
 import re
+import logging
 import pandas as pd
 from os.path import isfile, join
 from os import listdir
@@ -406,21 +407,25 @@ def filter_data_sector(df):
 
 
 
-def reconstruct_ef_df(ef_df_actual, ef_obj, year_strs):
-    sector = ef_obj.sector
-    fuel   = ef_obj.fuel
+def reconstruct_ef_df(ef_df_actual, efsubset_obj, year_strs):
+    logger = logging.getLogger(efsubset_obj.species)
+    logger.info("Overwriting EF DataFrame values for year = 1970")
+    
+    sector = efsubset_obj.sector
+    fuel   = efsubset_obj.fuel
     
     # Case: year = 1970
     year_str_0 = year_strs[0]
     
     print('Reconstructing EF DataFrame...')
-    for idx, iso in enumerate(ef_obj.isos):
+    for idx, iso in enumerate(efsubset_obj.isos):
         # df.loc[df[<some_column_name>] == <condition>, [<another_column_name>]] = <value_to_add>
         ef_df_actual.loc[(ef_df_actual['iso'] == iso) & (ef_df_actual['sector'] == sector) &
-                         (ef_df_actual['fuel'] == fuel), [year_str_0]] = ef_obj.ef_data[idx]
+                         (ef_df_actual['fuel'] == fuel), [year_str_0]] = efsubset_obj.ef_data[idx]
     
     # Copy the 1970 column to the columns of years > 1970
     # MASSIVELY faster than repeating the above loop for every year
+    logger.info("Overwriting EF DataFrame values for years >= 1970\n")
     for yr in year_strs[1:]:
         ef_df_actual[yr] = ef_df_actual[year_str_0]
         

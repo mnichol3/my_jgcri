@@ -4,6 +4,7 @@ Created on Mon Dec  9 08:53:36 2019
 
 @author: nich980
 """
+import logging
 import numpy as np
 
 class EFSubset:
@@ -57,6 +58,9 @@ class EFSubset:
         -------
         EFSubset obj
         """
+        logger = logging.getLogger(species)
+        logger.info("Initializing EFSubset object: {} {} {}".format(sector, fuel, year))
+        
         self.sector     = sector
         self.fuel       = fuel
         self.species    = species

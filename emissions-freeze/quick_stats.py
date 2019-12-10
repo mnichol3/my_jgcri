@@ -5,14 +5,13 @@ Created on Mon Nov 25 08:43:19 2019
 @author: nich980
 """
 
-import pandas as pd
 import numpy as np
+import logging
 
 from os.path import join
 from scipy import stats
 
 import ceds_io
-import efsubset
 
 
 
@@ -54,10 +53,19 @@ def write_stats(ef_df, species, year, f_paths):
 
 
 
-
 def get_ef_median(efsubset_obj):
-    from statistics import median
-    med = median(efsubset_obj.ef_data)
+    """
+    Get the median of an array of EF values
+    
+    Parameters
+    -----------
+    efsubset_obj : EFSubset obj
+    
+    Return
+    -------
+    NumPy float 64
+    """
+    med = np.median(efsubset_obj.ef_data)
     return med
 
 
@@ -77,6 +85,8 @@ def get_outliers_zscore(efsubset_obj, thresh=3):
     outliers : list of tuple - (str, float, float)
         ISOs and their respective EFs & z-scores that have been identified as outliers
     """
+    logger = logging.getLogger(efsubset_obj.species)
+    logger.info("Calculating Z-scores...")
     
     outliers = []
     
@@ -88,7 +98,12 @@ def get_outliers_zscore(efsubset_obj, thresh=3):
         
         for z_idx in bad_z:
             outliers.append((efsubset_obj.isos[z_idx], efsubset_obj.ef_data[z_idx], z_idx))
-    
+            
+        logger.debug("Outliers identified: {}".format(len(outliers)))
+    else:
+        print('EF Data is all zeros. Returning empty outlier array...')
+        logger.debug("EF data array is all zeros. Returning empty outlier array")
+        
     return outliers
 
 
@@ -109,7 +124,8 @@ def get_outliers_std(efsubset_obj):
     outliers : list of tuple - (str, float)
         ISOs and their respective EFs that have been identified as outliers
     """
-    outliers = []
+    logger = logging.getLogger(efsubset_obj.species)
+    logger.info("Idenfitying outliers using Standard Deviation method...")
     
     outliers = []
     
@@ -123,6 +139,8 @@ def get_outliers_std(efsubset_obj):
     for idx, ef in enumerate(efsubset_obj.ef_data):
         if ((ef > limit_upper) or (ef < limit_lower)):
             outliers.append((efsubset_obj.isos[idx], ef))
+            
+    logger.debug("Outliers identified: {}".format(len(outliers)))
     
     return outliers
 
@@ -142,6 +160,9 @@ def get_outliers_iqr(efsubset_obj, outlier_const=1.5):
     outliers : list of tuple - (str, float)
         ISOs and their respective EFs that have been identified as outliers
     """
+    logger = logging.getLogger(efsubset_obj.species)
+    logger.info("Calculating IQR...")
+    
     outliers = []
     
     upper_quartile = np.percentile(efsubset_obj.ef_data, 75)
@@ -159,6 +180,8 @@ def get_outliers_iqr(efsubset_obj, outlier_const=1.5):
         if (ef > upper_limit or ef < lower_limit):
             outliers.append((efsubset_obj.isos[idx], ef, idx))
             
+    logger.debug("Outliers identified: {}".format(len(outliers)))
+    
     return outliers
 
 
@@ -176,13 +199,27 @@ def get_boxcox(efsubset_obj):
     lam : float
         The lambda that maximizes the log-likelihood function
     """
+    logger = logging.getLogger(efsubset_obj.species)
+    logger.info("Performing Box Cox transform...")
+    
     data = np.asarray(efsubset_obj.ef_data, dtype=np.float64)
+    
+    # If the data values are tiny, scale the values to avoid overflow 
+    # during numpy arithmetic
+    data_med = np.median(data)
+    if (data_med < 1.0e-4):
+        scale_factor = 1.0e3
+        data = data * scale_factor
+        logger.debug("Median of data array < 1.0e-4. Scaling by {}".format(data_med, scale_factor))
     
     try:
         xt, lam = stats.boxcox(data)
+        logger.debug("Box Cox transform successful")
     except ValueError:
         # ValueError: Data must be positive
         # Temporarily discarding the 0, and then using -1/λ for the transformed value of 0
+        logger.info("Data values <= 0 encountered")
+        
         pos_data = data[data > 0]
         
         try:
@@ -192,11 +229,14 @@ def get_boxcox(efsubset_obj):
             # Return data as xt as theres nothing we can do
             xt = data
             lam = 0
+            logger.debug("Data values are all 0. Returning original data array")
         else:
             xt = np.empty_like(data)
             
             xt[data > 0] = x
             xt[data == 0] = -1/lam
+            
+            logger.debug("Box Cox transform successful")
     
     return (xt, lam)
     
