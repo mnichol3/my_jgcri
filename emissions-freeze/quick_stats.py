@@ -80,14 +80,14 @@ def get_outliers_zscore(efsubset_obj, thresh=3):
     
     outliers = []
     
-#    print("Z-score thresh: {}".format(thresh))
-    
-    score = np.abs(stats.zscore(efsubset_obj.ef_data))
-    
-    bad_z = np.where(score > thresh)[0]
-    
-    for z_idx in bad_z:
-        outliers.append((efsubset_obj.isos[z_idx], efsubset_obj.ef_data[z_idx], z_idx))
+    # If we have an array of all zeros, do nothing
+    if (not np.all(efsubset_obj.ef_data[0] == 0.0)):
+        score = np.abs(stats.zscore(efsubset_obj.ef_data))
+        
+        bad_z = np.where(score > thresh)[0]
+        
+        for z_idx in bad_z:
+            outliers.append((efsubset_obj.isos[z_idx], efsubset_obj.ef_data[z_idx], z_idx))
     
     return outliers
 
@@ -176,21 +176,27 @@ def get_boxcox(efsubset_obj):
     lam : float
         The lambda that maximizes the log-likelihood function
     """
-    data = np.asarray(efsubset_obj.ef_data)
+    data = np.asarray(efsubset_obj.ef_data, dtype=np.float64)
     
     try:
         xt, lam = stats.boxcox(data)
-    except:
+    except ValueError:
         # ValueError: Data must be positive
         # Temporarily discarding the 0, and then using -1/λ for the transformed value of 0
         pos_data = data[data > 0]
         
-        x, lam = stats.boxcox(pos_data)
-        
-        xt = np.empty_like(data)
-        
-        xt[data > 0] = x
-        xt[data == 0] = -1/lam
+        try:
+            x, lam = stats.boxcox(pos_data)
+        except ValueError:
+            # Occurs when all data values are 0, hence pos_data is empty
+            # Return data as xt as theres nothing we can do
+            xt = data
+            lam = 0
+        else:
+            xt = np.empty_like(data)
+            
+            xt[data > 0] = x
+            xt[data == 0] = -1/lam
     
     return (xt, lam)
     
