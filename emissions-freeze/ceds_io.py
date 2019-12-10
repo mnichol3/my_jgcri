@@ -417,7 +417,6 @@ def reconstruct_ef_df(ef_df_actual, efsubset_obj, year_strs):
     # Case: year = 1970
     year_str_0 = year_strs[0]
     
-    print('Reconstructing EF DataFrame...')
     for idx, iso in enumerate(efsubset_obj.isos):
         # df.loc[df[<some_column_name>] == <condition>, [<another_column_name>]] = <value_to_add>
         ef_df_actual.loc[(ef_df_actual['iso'] == iso) & (ef_df_actual['sector'] == sector) &

@@ -101,7 +101,6 @@ def get_outliers_zscore(efsubset_obj, thresh=3):
             
         logger.debug("Outliers identified: {}".format(len(outliers)))
     else:
-        print('EF Data is all zeros. Returning empty outlier array...')
         logger.debug("EF data array is all zeros. Returning empty outlier array")
         
     return outliers

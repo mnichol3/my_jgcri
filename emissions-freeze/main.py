@@ -128,7 +128,7 @@ def main():
                 species_log.debug("EF data array median: {}".format(ef_median))
                 
                 # Use num_outlier_iters + 1 bc of how range() handles the upper bound
-                for i in range(num_outlier_iters):
+#                for i in range(num_outlier_iters):
                 
 #                    ef_median = quick_stats.get_ef_median(ef_obj)
                     
@@ -138,16 +138,16 @@ def main():
 #                    ef_obj_boxcox.ef_data = boxcox
                     
                     # Identify outliers based on the box cox transform EF data
-                    species_log.info("Identifying outliers")
-                    main_log.info("Identifying outliers")
-                    outliers = quick_stats.get_outliers_zscore(efsubset_obj)
-                    
-                    # Set the EF value of each idenfitied outlier to the median of the EF values
-                    for olr in outliers:
-                        efsubset_obj.ef_data[olr[2]] = ef_median
-                        
-                    species_log.info("Setting outlier values to median EF value")
-                    main_log.info("Setting outlier values to median EF value")
+                species_log.info("Identifying outliers")
+                main_log.info("Identifying outliers")
+                outliers = quick_stats.get_outliers_zscore(efsubset_obj)
+                
+                species_log.info("Setting outlier values to median EF value")
+                main_log.info("Setting outlier values to median EF value")
+                
+                # Set the EF value of each idenfitied outlier to the median of the EF values
+                for olr in outliers:
+                    efsubset_obj.ef_data[olr[2]] = ef_median
                 
                 #quick_stats.plot_df(ef_obj, plt_opts)
                 
@@ -171,7 +171,6 @@ def main():
         ef_df.to_csv(f_out, sep=',', header=True, index=False)
         main_log.info("DataFrame written to {}\n".format(f_out))
         
-        break
     # End EF file for-loop
     main_log.info("Finished processing all species")
     main_log.info("Goodbye")
