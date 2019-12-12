@@ -70,11 +70,14 @@ def get_model_df(abs_path, model='all'):
 
 
 
-def get_scenarios(model_df):
+def get_scenarios(model_df, model=None):
     """
     Get the scenarios
     """
-    scenarios = model_df['Scenario'].unique()
+    if (model):
+        scenarios = model_df[model_df['Model'] == model]['Scenario'].unique()
+    else:
+        scenarios = model_df['Scenario'].unique()
     return scenarios
     
 
@@ -142,20 +145,111 @@ def plot_model_facet(model_df, model):
             
             units = '{}/yr'.format(units[:2])
             
-            for i in range(len(data_df.index)):
-                x = [int(col) for col in data_df.columns.tolist() if col.isdigit()]
-                y = data_df.iloc[i,7:]
-                ax.plot(x, y, 'o', ls='-', ms=4, label=data_df['EM_SubSpecies'].iloc[i])
+            x = [int(col) for col in data_df.columns.tolist() if col.isdigit()]
+            
+            # If sub-species exist, sum their values
+            y = data_df.iloc[:,7:].sum().values
+            
+            ax.plot(x, y, color='blue', marker='o', ls='-', ms=4, label=species)
             ax.set_ylabel('{}'.format(units))
             ax.set_xticks([2025, 2050, 2075, 2100])
             ax.set_xlim(2015, 2100)
             
-            if (species == 'HFC'):
-                ax.legend(loc=1, ncol=2)
-            else:
-                ax.legend()
+            ax.legend()
+            
         # End species loop
+        
         f_name = '{}-{}-facet.png'.format(model, scenario)
+        out_path = join(out_path, f_name)
+        print(f_name)
+        
+        figManager = plt.get_current_fig_manager()
+        figManager.window.showMaximized()
+        
+        plt.show()
+        
+    # End scenario loop
+    
+    
+    
+def plot_all_facet(model_df):
+    """
+    Plot a facet of all model result graphs, by emission species, for all of the given
+    scenarios in the data set
+    
+    Parameters
+    -----------
+    model_df : Pandas DataFrame
+        DataFrame containing model data to plot
+    model : str
+        Model whose data is represented in the model_df DataFrame
+        
+    Return
+    -------
+    None
+    """
+    out_path = r"C:\Users\nich980\data\global_ar6"
+    
+    plt.style.use('ggplot')
+    
+    scenarios = get_scenarios(model_df, model='GCAM')
+    
+    models = model_df['Model'].unique()
+    
+    figsize = (10, 8)
+    cols = 4
+    rows = 4
+    
+#    fig, axs = plt.subplots(rows, cols, figsize=figsize, constrained_layout=True)
+    
+    for scenario in scenarios:
+        
+        scenario_df = model_df[model_df['Scenario'] == scenario]
+        
+        em_species = scenario_df['EM_Species'].unique()
+        
+        figsize = (10, 8)
+        cols = 4
+        rows = 4
+        
+        fig, axs = plt.subplots(rows, cols, figsize=figsize, constrained_layout=True)
+        fig.suptitle('{} Scenario {}'.format('GCAM', scenario), fontsize=16)
+        
+        axs = trim_axs(axs, len(em_species))
+        
+        for ax, species in zip(axs, em_species):
+            ax.set_title('species = {}'.format(species))
+            
+            data_df = scenario_df[scenario_df['EM_Species'] == species]
+            units = data_df['Unit'].tolist()
+            
+            if (not isinstance(units, str)):
+                units = units[0]
+            
+            units = '{}/yr'.format(units[:2])
+            
+            for model in models:
+                
+                if (model == 'GCAM'):
+                    plt_color = 'blue'
+                    z = 2
+                else:
+                    plt_color = (0.5, 0.5, 0.5)
+                    z = 1
+                    
+                temp_df = data_df[data_df['Model'] == model]
+                
+                for i in range(len(temp_df.index)):
+                    x = [int(col) for col in temp_df.columns.tolist() if col.isdigit()]
+                    y = temp_df.iloc[:,7:].sum().values
+                    ax.plot(x, y, color=plt_color, marker='o', ls='-', ms=4, zorder=z)
+                    
+            ax.set_ylabel('{}'.format(units))
+            ax.set_xticks([2025, 2050, 2075, 2100])
+            ax.set_xlim(2015, 2100)
+        
+        # End species loop
+        f_name = '{}-{}-facet.png'.format('ALL', scenario)
         out_path = join(out_path, f_name)
         print(f_name)
         
@@ -194,16 +288,11 @@ def main():
     f_abs = join(f_path, f_name)
     
     # Get the GCAM data in a DataFrame
-    em_df = get_model_df(f_abs, model='GCAM')
-    
-#    em_df = em_df[em_df['Scenario'] == 'SSP1-19']
-#    em_df = em_df[em_df['EM_Species'] == 'CO2']
-#    em_df = melt_df(em_df)
-   
-#    pp_df(em_df[:10])
-#    print(em_df.iloc[0])
-    
+    em_df = get_model_df(f_abs, model="GCAM")
     plot_model_facet(em_df, 'GCAM')
+    
+#    em_df = get_model_df(f_abs)
+#    plot_all_facet(em_df)
     
     
    
