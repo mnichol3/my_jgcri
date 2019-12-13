@@ -80,8 +80,8 @@ def diff_activity_files(dir_path):
     mismatch = []
     file_re= r'(H\.\w+_total_activity_extended.csv)'
     
-    print("\nSearching in {}...".format(dir_path))
-    logger.debug("Searching for activity files in {}".format(dir_path))
+    print("\nFetching activity files to Diff from {}...".format(dir_path))
+    logger.info("Searching for activity files in {}".format(dir_path))
     
     # Iterate through files in dir_path and cumulate names of activity files
     for f in listdir(dir_path):
@@ -97,7 +97,7 @@ def diff_activity_files(dir_path):
     
     for f in activity_files:
         print(f)
-        logger.debug(f)
+        logger.info(f)
     print("\n")
     
     for idx, act_file in enumerate(activity_files):
@@ -133,7 +133,7 @@ def diff_activity_files(dir_path):
     else:
         info_str = "All activity files are identical"
         logger.info(info_str)
-        print("\n--- {} ---".format(info_str))
+        print("\n--- {} ---\n".format(info_str))
 
 
 
@@ -260,7 +260,7 @@ def calc_emissions(species, ef_file, act_file, out_path):
     logger.info('Reading emission factor file from {}'.format(ef_file))
     ef_df = pd.read_csv(ef_file, sep=',', header=0)
     
-    logger.info('Reading activity file from {}'.format(act_df))
+    logger.info('Reading activity file from {}'.format(act_file))
     act_df = pd.read_csv(act_file, sep=',', header=0)
     
     # Get the 'iso', 'sector', 'fuel', & 'units' columns
@@ -319,15 +319,15 @@ def main():
     for species in em_species:
         
         # Get emission factor file for species
-        frozen_ef_file = ceds_io.get_file_for_species(base_dir_ef, species, "ef")
+        frozen_ef_file = ceds_io.get_file_for_species(dirs['base_dir_ef'], species, "ef")
         
         # Get activity file for species
-        activity_file = ceds_io.get_file_for_species(base_dir_act, species, "activity")
+        activity_file = ceds_io.get_file_for_species(dirs['base_dir_act'], species, "activity")
         
-        ef_path = join(base_dir_ef, frozen_ef_file)
-        act_path = join(base_dir_act, activity_file)
+        ef_path = join(dirs['base_dir_ef'], frozen_ef_file)
+        act_path = join(dirs['base_dir_act'], activity_file)
         
-        calc_emissions(species, ef_path, act_path, out_path_ems)
+        calc_emissions(species, ef_path, act_path, dirs['out_path_ems'])
         
         
         
