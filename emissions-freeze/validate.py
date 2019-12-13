@@ -172,75 +172,94 @@ def pp_results(rslt):
             z_str = 'Bad Z-score(s) present'
         print('{}: {}'.format(pair[0], z_str.rjust(max_len - len(pair[0]) + 2)))
         
+        
+     
+def calc_emissions(species, ef_file, act_file, out_path):
+    """
+    Calculate the hypothetical emissions from the frozen emissions and the CMIP6
+    activity files
+    
+    Emissions = EF x Activity
+    
+    Parameters
+    -----------
+    species : str
+        Emissions species
+    ef_file : str
+        Absolute path of the frozen emission factor file for the given emissions species
+    act_file : str
+        Absolute path of the activity file for the given emissions species
+    out_path : str
+        Directory to write the resulting emissions file to
+    """
+    print('Calculating frozen total emissions for {}'.format(species))
+    
+    data_col_headers = ['X{}'.format(i) for i in range(1750, 2015)]
+    
+    ef_df = pd.read_csv(ef_file, sep=',', header=0)
+    act_df = pd.read_csv(act_file, sep=',', header=0)
+    
+    # Get the 'iso', 'sector', 'fuel', & 'units' columns
+    meta_cols = ef_df.iloc[:, 0:4]
+    
+    # Sanity check
+    if (meta_cols.equals(act_df.iloc[:, 0:4])):
+        raise ValueError('Emission Factor & Activity DataFrames have mis-matched meta columns')
+    
+    # Get a subset of the emission factor & activity files that contain numerical
+    # data so we can compute emissions
+    ef_subs = ef_df[data_col_headers]
+    act_subs = act_df[data_col_headers]
+    
+    
+    emissions_df = pd.DataFrame(ef_subs.values * act_subs.values,
+                                columns=ef_subs.columns, index=ef_subs.index)
+    
+    f_name = '{}_total_frozen_emissions.csv'.format(species)
+    
+    f_out = join(out_path, f_name)
+    
+    print('     writing to file....')
+    
+    emissions_df.to_csv(f_out, sep=',', header=True, index=False)
+    
     
     
 def main():
-    from sys import exit
     
-    results = []
-    fuels = ['biomass', 'brown_coal', 'coal_coke', 'diesel_oil',
-             'hard_coal', 'heavy_oil', 'light_oil', 'natural_gas']
+    """
+    Tasks to run calc_emissions() for frozen emission factor files
+    """
     
-    out_path = r"C:\Users\nich980\data\e-freeze\dat_out"
+    base_dir_ef = r"C:\Users\nich980\data\e-freeze\dat_out\ef_files"
+    base_dir_act = r"C:\Users\nich980\data\CEDS_CMIP6_Release_Archive\intermediate-output"
+    out_path_ems = r"C:\Users\nich980\data\e-freeze\dat_out\frozen_emissions"
+#    out_path_act = r"C:\Users\nich980\data\e-freeze\dat_out\frozen_activity"
     
-    data_path = r"C:\Users\nich980\data\CEDS_CMIP6_Release_Archive\intermediate-output"
-    f_name = "H.SO2_total_EFs_extended.csv"
-    ef_path = join(data_path, f_name)
+#    diff_activity_files(base_dir_act)
     
-    species = ceds_io.get_species_from_fname(f_name)
+    # Emission species in the above directory
+    em_species = ceds_io.get_avail_species(base_dir_ef)
     
-    df = ceds_io.read_ef_file(ef_path)
-    df = ceds_io.subset_yr_span(df, 1970)
-    
-    isos = ceds_io.get_isos(df)
-    
-    for iso in isos:
-        iso_df = ceds_io.subset_iso(df, iso)                # Subset for current iso
-        for fuel in fuels:
-            temp_df = ceds_io.subset_fuel(iso_df, fuel)     # Subset for current fuel
-            
-            print('Processing:')
-            print('     Species: {}'.format(species))
-            print('     iso:     {}'.format(iso))
-            print('     fuel:    {}'.format(fuel))
-            
-            bad_z = ef_zscore(temp_df)
-            
-            num_outliers = bad_z[0].size
-            
-            print('     Outliers flagged: {}\n'.format(num_outliers))
-            
-            if (num_outliers != 0):
-                results.append([species, iso, fuel])
-                print(temp_df)
-                print('\n')
-        exit(0)
-    
-    out_path = join(out_path, 'bad_z.csv')
-    ceds_io.arr_to_csv(results, out_path)
+    for species in em_species:
+        
+        # Get emission factor file for species
+        frozen_ef_file = ceds_io.get_file_for_species(base_dir_ef, species, "ef")
+        
+        # Get activity file for species
+        activity_file = ceds_io.get_file_for_species(base_dir_act, species, "activity")
+        
+        ef_path = join(base_dir_ef, frozen_ef_file)
+        act_path = join(base_dir_act, activity_file)
+        
+        calc_emissions(species, ef_path, act_path, out_path_ems)
+        
+        
+        
+        
+        
         
     
-    
-    
-    
-    
-#    ef_files = fetch_ef_files(data_path)
-    
-#    for f_name in ef_files:
-#    
-#        print("Reading {}...".format(f_name))
-#        ef_path = join(data_path, f_name)
-#        ef_df = read_ef_file(ef_path)
-#        
-#        print("Filtering DataFrame by sector: {}".format("combustion"))
-#        ef_df = filter_data_sector(ef_df)
-#        
-#        curr_z = ef_zscore(ef_df, 1970)
-#       
-#        results.append([f_name, curr_z])
-#    
-#    pp_results(results)
-   
     
 if __name__ == '__main__':
     main()            
