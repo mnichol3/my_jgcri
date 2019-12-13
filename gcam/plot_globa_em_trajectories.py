@@ -363,12 +363,20 @@ def plot_fluorocarbons(model_df, model='GCAM'):
     species_dict = {'HFC': hfc,
                     'PFC': pfc}
     
+    plot_dims = {'HFC': (3, 3),
+                 'PFC': (2, 2)}
+    
+    legend_coords = {'HFC': (0.97, 0.01),
+                     'PFC': (0.9, 0.07)}
+    
     figsize = (10, 8)
-    cols = 3
-    rows = 3
     
     for species in ['HFC']:
-        fig, axs = plt.subplots(rows, cols, figsize=figsize, constrained_layout=True)
+        
+        cols = plot_dims[species][0]
+        rows = plot_dims[species][1]
+        
+        fig, axs = plt.subplots(rows, cols, figsize=figsize, dpi=150, constrained_layout=True)
         fig.suptitle('{} Scenarios for {} Sub-species'.format(model, species), fontsize=16)
         
         # HFC or PFC DataFrame
@@ -416,7 +424,8 @@ def plot_fluorocarbons(model_df, model='GCAM'):
         
         handles, labels = ax.get_legend_handles_labels()
     #    fig.legend(handles, labels, loc='lower right', ncol=2)
-        leg = fig.legend(handles, labels, loc=4, bbox_to_anchor=(0.9,0.07), ncol=2, title='GCAM Scenarios')
+        leg = fig.legend(handles, labels, loc=4, bbox_to_anchor=legend_coords[species],
+                         ncol=2, title='GCAM Scenarios')
         
         for legobj in leg.legendHandles:
             legobj.set_linewidth(3.0)
