@@ -27,6 +27,7 @@ def nuke_logs():
 
 
 def setup_logger():
+    nuke_logs()
     
     log_format = logging.Formatter("%(asctime)s %(levelname)6s: %(message)s", "%Y-%m-%d %H:%M:%S")
     
@@ -132,7 +133,7 @@ def diff_activity_files(dir_path):
             print("--- {} ---".format(info_str))
     else:
         info_str = "All activity files are identical"
-        logger.info(info_str)
+        logger.info("{}\n".format(info_str))
         print("\n--- {} ---\n".format(info_str))
 
 
@@ -230,7 +231,7 @@ def pp_results(rslt):
         
         
      
-def calc_emissions(species, ef_file, act_file, out_path):
+def calc_emissions(dir_dict):
     """
     Calculate the hypothetical emissions from the frozen emissions and the CMIP6
     activity files
@@ -239,58 +240,88 @@ def calc_emissions(species, ef_file, act_file, out_path):
     
     Parameters
     -----------
-    species : str
-        Emissions species
-    ef_file : str
-        Absolute path of the frozen emission factor file for the given emissions species
-    act_file : str
-        Absolute path of the activity file for the given emissions species
-    out_path : str
-        Directory to write the resulting emissions file to
+    dir_dict : dictionary of {str: str}
+        Dictionary holding the paths to directories for the various files needed.
+        Keys: ['base_dir_ef', 'base_dir_act', 'out_path_ems']
+        
+    Return
+    -------
+    None, writes to file
     """
     logger = logging.getLogger("validate")
     logger.info('In validate::calc_emissions()')
     
-    info_str = 'Calculating frozen total emissions for {}'.format(species)
-    logger.info(info_str)
-    print(info_str)
+    # Unpack for better readability
+    base_dir_ef = dir_dict['base_dir_ef']
+    base_dir_act = dir_dict['base_dir_act']
+    out_path_ems = dir_dict['out_path_ems']
     
-    data_col_headers = ['X{}'.format(i) for i in range(1750, 2015)]
+    logger.info('Searing for available species in {}'.format(base_dir_ef))
+    em_species = ceds_io.get_avail_species(base_dir_ef)
     
-    logger.info('Reading emission factor file from {}'.format(ef_file))
-    ef_df = pd.read_csv(ef_file, sep=',', header=0)
-    
-    logger.info('Reading activity file from {}'.format(act_file))
-    act_df = pd.read_csv(act_file, sep=',', header=0)
-    
-    # Get the 'iso', 'sector', 'fuel', & 'units' columns
-    meta_cols = ef_df.iloc[:, 0:4]
-    
-    # Sanity check
-    if (meta_cols.equals(act_df.iloc[:, 0:4])):
-        err_str = 'Emission Factor & Activity DataFrames have mis-matched meta columns'
-        logger.error(err_str)
-        raise ValueError(err_str)
-    
-    # Get a subset of the emission factor & activity files that contain numerical
-    # data so we can compute emissions
-    logger.info('Subsetting emission factor & activity DataFrames')
-    ef_subs = ef_df[data_col_headers]
-    act_subs = act_df[data_col_headers]
-    
-    logger.info('Calculating total emissions')
-    emissions_df = pd.DataFrame(ef_subs.values * act_subs.values,
-                                columns=ef_subs.columns, index=ef_subs.index)
-    
-    f_name = '{}_total_frozen_emissions.csv'.format(species)
-    
-    f_out = join(out_path, f_name)
-    
-    logger.info('Writing total emissions DataFrame to {}'.format(f_out))
-    print('     writing to file....\n')
-    
-    emissions_df.to_csv(f_out, sep=',', header=True, index=False)
-    logger.info('Finished calculating total emissions for {}'.format(species))
+    for species in em_species:
+        info_str = 'Calculating frozen total emissions for {}'.format(species)
+        logger.info(info_str)
+        print(info_str)
+        
+        # Get emission factor file for species
+        logger.info('Fetching emission factor file from {}'.format(base_dir_ef))
+        frozen_ef_file = ceds_io.get_file_for_species(base_dir_ef, species, "ef")
+        
+        # Get activity file for species
+        logger.info('Fetching activity file from {}'.format(base_dir_act))
+        activity_file = ceds_io.get_file_for_species(base_dir_act, species, "activity")
+        
+        ef_path = join(base_dir_ef, frozen_ef_file)
+        act_path = join(base_dir_act, activity_file)
+        
+        # Create list of strings representing year column headers
+        data_col_headers = ['X{}'.format(i) for i in range(1750, 2015)]
+        
+        # Read emission factor & activity files into DataFrames
+        logger.info('Reading emission factor file from {}'.format(ef_path))
+        ef_df = pd.read_csv(ef_path, sep=',', header=0)
+        
+        logger.info('Reading activity file from {}'.format(act_path))
+        act_df = pd.read_csv(act_path, sep=',', header=0)
+        
+        # Get the 'iso', 'sector', 'fuel', & 'units' columns
+        meta_cols = ef_df.iloc[:, 0:4]
+        
+        # Sanity check
+        if (meta_cols.equals(act_df.iloc[:, 0:4])):
+            err_str = 'Emission Factor & Activity DataFrames have mis-matched meta columns'
+            logger.error(err_str)
+            raise ValueError(err_str)
+        
+        # Get a subset of the emission factor & activity files that contain numerical
+        # data so we can compute emissions
+        logger.info('Subsetting emission factor & activity DataFrames')
+        ef_subs = ef_df[data_col_headers]
+        act_subs = act_df[data_col_headers]
+        
+        logger.info('Calculating total emissions')
+        emissions_df = pd.DataFrame(ef_subs.values * act_subs.values,
+                                    columns=ef_subs.columns, index=ef_subs.index)
+        
+        # Insert the meta ('iso', 'sector', 'fuel', 'units') columns at the 
+        # beginning of the DataFrame
+        logger.info('Concatinating meta_cols and emissions_df DataFrames along axis 1')
+        emissions_df = pd.concat([meta_cols, emissions_df], axis=1)
+       
+        f_name = '{}_total_frozen_emissions.csv'.format(species)
+        
+        f_out = join(out_path_ems, f_name)
+        
+        info_str = 'Writing emissions DataFrame to {}'.format(f_out)
+        logger.info(info_str)
+        print('     {}\n'.format(info_str))
+        
+        emissions_df.to_csv(f_out, sep=',', header=True, index=False)
+        logger.info('Finished calculating total emissions for {}'.format(species))
+        
+    # End species loop
+    logger.info('Leaving validate::calc_emissions()\n')
     
     
     
@@ -313,21 +344,7 @@ def main():
         
     diff_activity_files(dirs['base_dir_act'])
     
-    # Emission species in the above directory
-    em_species = ceds_io.get_avail_species(dirs['base_dir_ef'])
-    
-    for species in em_species:
-        
-        # Get emission factor file for species
-        frozen_ef_file = ceds_io.get_file_for_species(dirs['base_dir_ef'], species, "ef")
-        
-        # Get activity file for species
-        activity_file = ceds_io.get_file_for_species(dirs['base_dir_act'], species, "activity")
-        
-        ef_path = join(dirs['base_dir_ef'], frozen_ef_file)
-        act_path = join(dirs['base_dir_act'], activity_file)
-        
-        calc_emissions(species, ef_path, act_path, dirs['out_path_ems'])
+    calc_emissions(dirs)
         
         
         
