@@ -7,7 +7,8 @@ Created on Thu Dec 12 08:19:44 2019
 
 import pandas as pd
 import matplotlib.pyplot as plt
-from time import sleep
+import matplotlib.cm as cm
+import numpy as np
 
 from os.path import join
 
@@ -259,10 +260,176 @@ def plot_all_facet(model_df):
         plt.show()
         
     # End scenario loop
+     
+
+
+
+def plot_gcam_scanarios(model_df, model='GCAM'):
+    """
+    Plot all GCAM scenarios for each species (except HFC & PFC) on a facet plot
+    """       
+    out_path = r"C:\Users\nich980\data\global_ar6"
+    
+    plt.style.use('ggplot')
+    
+    scenarios = get_scenarios(model_df)
+    
+    colors = cm.tab20(np.linspace(0, 1, len(scenarios)))
+    
+    figsize = (10, 8)
+    cols = 4
+    rows = 4
+    
+#    fig, axs = plt.subplots(rows, cols, figsize=figsize, constrained_layout=True)
+        
+    em_species = model_df['EM_Species'].unique().tolist()
+    em_species.remove('HFC')
+    em_species.remove('PFC')
+    
+    
+    figsize = (10, 8)
+    cols = 4
+    rows = 4
+    
+    fig, axs = plt.subplots(rows, cols, figsize=figsize, constrained_layout=True)
+    fig.suptitle('{} Emission Species & Scenarios'.format(model), fontsize=16)
+    
+    axs = trim_axs(axs, len(em_species))
+    
+    for ax, species in zip(axs, em_species):
+        
+        data_df = model_df[model_df['EM_Species'] == species]
             
+        units = data_df['Unit'].tolist()
+        if (not isinstance(units, str)):
+                units = units[0]
+            
+        units = '{}/yr'.format(units[:2])
+        
+        ax.set_title('species = {}'.format(species))
+        
+        for scenario_idx, scenario in enumerate(scenarios):
+            scenario_df = data_df[data_df['Scenario'] == scenario]
+
+            x = [int(col) for col in scenario_df.columns.tolist() if col.isdigit()]
+            
+            # If sub-species exist, sum their values
+            y = scenario_df.iloc[:,7:].sum().values
+            
+            ax.plot(x, y, c=colors[scenario_idx], ls='-', lw=1, label=scenario)
+            
+        ax.set_ylabel('{}'.format(units))
+        ax.set_xticks([2025, 2050, 2075, 2100])
+        ax.set_xlim(2015, 2100)
+        
+    # End species loop
+    
+    handles, labels = ax.get_legend_handles_labels()
+#    fig.legend(handles, labels, loc='lower right', ncol=2)
+    leg = fig.legend(handles, labels, loc=4, bbox_to_anchor=(0.97,0.23), ncol=2, title='GCAM Scenarios')
+    
+    for legobj in leg.legendHandles:
+        legobj.set_linewidth(3.0)
+    
+    f_name = '{}-{}-facet.png'.format(model, scenario)
+    out_path = join(out_path, f_name)
+    print(f_name)
+    
+    figManager = plt.get_current_fig_manager()
+    figManager.window.showMaximized()
+    
+    plt.show()
     
     
     
+def plot_fluorocarbons(model_df, model='GCAM'):
+    out_path = r"C:\Users\nich980\data\global_ar6"
+    
+    plt.style.use('ggplot')
+    
+    scenarios = get_scenarios(model_df)
+    
+    colors = cm.tab20(np.linspace(0, 1, len(scenarios)))
+    
+    figsize = (10, 8)
+    cols = 4
+    rows = 4
+    
+#    fig, axs = plt.subplots(rows, cols, figsize=figsize, constrained_layout=True)
+        
+    hfc = model_df[model_df['EM_Species'] == 'HFC']
+    pfc = model_df[model_df['EM_Species'] == 'PFC']
+    
+    species_dict = {'HFC': hfc,
+                    'PFC': pfc}
+    
+    figsize = (10, 8)
+    cols = 3
+    rows = 3
+    
+    for species in ['HFC']:
+        fig, axs = plt.subplots(rows, cols, figsize=figsize, constrained_layout=True)
+        fig.suptitle('{} Scenarios for {} Sub-species'.format(model, species), fontsize=16)
+        
+        # HFC or PFC DataFrame
+        species_df = species_dict[species]
+        
+        sub_species = species_df['EM_SubSpecies'].unique().tolist()
+        
+        units = species_df['Unit'].tolist()[0]
+        
+#        if (not isinstance(units, str)):
+#            units = units[0]
+                
+        units = '{}/yr'.format(units[:2])
+        
+        axs = trim_axs(axs, len(sub_species))
+        
+        for ax, sub_s in zip(axs, sub_species):
+            
+            # Sub-species DataFrame
+            subs_df = species_df[species_df['EM_SubSpecies'] == sub_s]
+#                
+#            units = data_df['Unit'].tolist()
+#            if (not isinstance(units, str)):
+#                    units = units[0]
+#                
+#            units = '{}/yr'.format(units[:2])
+            
+            ax.set_title('{}'.format(sub_s))
+            
+            for scenario_idx, scenario in enumerate(scenarios):
+                scenario_df = subs_df[subs_df['Scenario'] == scenario]
+    
+                x = [int(col) for col in scenario_df.columns.tolist() if col.isdigit()]
+                
+                # If sub-species exist, sum their values
+                y = scenario_df.iloc[:,7:].sum().values
+                
+                ax.plot(x, y, c=colors[scenario_idx], ls='-', lw=1.5, label=scenario)
+                
+            ax.set_ylabel('{}'.format(units))
+            ax.set_xticks([2025, 2050, 2075, 2100])
+            ax.set_xlim(2015, 2100)
+            
+        # End species loop
+        
+        handles, labels = ax.get_legend_handles_labels()
+    #    fig.legend(handles, labels, loc='lower right', ncol=2)
+        leg = fig.legend(handles, labels, loc=4, bbox_to_anchor=(0.9,0.07), ncol=2, title='GCAM Scenarios')
+        
+        for legobj in leg.legendHandles:
+            legobj.set_linewidth(3.0)
+        
+        f_name = '{}-{}-facet.png'.format(model, scenario)
+        out_path = join(out_path, f_name)
+        print(f_name)
+        
+        figManager = plt.get_current_fig_manager()
+        figManager.window.showMaximized()
+        
+        plt.show()
+        break
     
 
 
@@ -276,6 +443,7 @@ def melt_df(model_df):
 
 
 def pp_df(df):
+    df = df[:20]
     with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
         print(df)
 
@@ -289,7 +457,11 @@ def main():
     
     # Get the GCAM data in a DataFrame
     em_df = get_model_df(f_abs, model="GCAM")
-    plot_model_facet(em_df, 'GCAM')
+    plot_fluorocarbons(em_df)
+    
+#    print(em_df.columns.tolist())
+#    plot_model_facet(em_df, 'GCAM')
+#    plot_gcam_scanarios(em_df)
     
 #    em_df = get_model_df(f_abs)
 #    plot_all_facet(em_df)
