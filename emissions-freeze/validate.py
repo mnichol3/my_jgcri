@@ -6,11 +6,50 @@ Author: Matt Nicholson
 import pandas as pd
 import numpy as np
 import re
+import logging
 
-from os.path import isfile, join
-from os import listdir
+from os.path import isdir, isfile, join
+from os import getcwd, listdir, mkdir, remove
 
 import ceds_io
+
+
+
+def nuke_logs():
+    cwd = getcwd()
+    log_dir = join(cwd, "logs")
+    
+    log_files = [f for f in listdir(log_dir) if "validate" in f]
+   
+    for f in log_files:
+        remove(join(log_dir, f))
+
+
+
+def setup_logger():
+    
+    log_format = logging.Formatter("%(asctime)s %(levelname)6s: %(message)s", "%Y-%m-%d %H:%M:%S")
+    
+    cwd = getcwd()
+    f_name = 'validate.log'.format()
+    
+    f_dir = join(cwd, 'logs')
+    local_dir = join('logs', f_name)
+    
+    if (not isdir(f_dir)):
+        mkdir(f_dir)
+        
+    handler = logging.FileHandler(local_dir)
+    handler.setFormatter(log_format)
+        
+    logger = logging.getLogger("validate")
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
+    
+    logger.info("Log created!\n")
+    
+    return logger
+
 
 
 def diff_activity_files(dir_path):
@@ -34,11 +73,15 @@ def diff_activity_files(dir_path):
     None
     
     """
+    logger = logging.getLogger("validate")
+    logger.info('In validate::diff_activity_files()')
+    
     activity_files = []
     mismatch = []
     file_re= r'(H\.\w+_total_activity_extended.csv)'
     
     print("\nSearching in {}...".format(dir_path))
+    logger.debug("Searching for activity files in {}".format(dir_path))
     
     # Iterate through files in dir_path and cumulate names of activity files
     for f in listdir(dir_path):
@@ -47,10 +90,14 @@ def diff_activity_files(dir_path):
             if (match):
                 activity_files.append(match.group(1))
     
-    print("\nActivity files found: {}".format(len(activity_files)))
+    info_str = "Activity files found: {}".format(len(activity_files))
+    print("\n{}".format(info_str))
     print("-"*25)
+    logger.info(info_str)
+    
     for f in activity_files:
         print(f)
+        logger.debug(f)
     print("\n")
     
     for idx, act_file in enumerate(activity_files):
@@ -58,7 +105,10 @@ def diff_activity_files(dir_path):
         df1 = pd.read_csv(path_f1, sep=',', header=0)
         
         for j in range(len(activity_files) - idx):
-            print("Comparing {} and {}...".format(act_file, activity_files[j]))
+            info_str = "Comparing {} and {}...".format(act_file, activity_files[j])
+            print(info_str)
+            logger.info(info_str)
+            
             path_f2 = join(dir_path, activity_files[j])
             df2 = pd.read_csv(path_f2, sep=',', header=0)
             
@@ -71,13 +121,19 @@ def diff_activity_files(dir_path):
         del df1
     
     if (len(mismatch) >0 ):
-        print("\nThe following activity files did not match:")
+        info_str = "The following activity files did not match:"
+        logger.info(info_str)
+        print("\n{}".format(info_str))
         print("-"*(55-12))
         
         for pair in mismatch:
-            print("--- {} and {} ---".format(pair[0], pair[1]))
+            info_str = "{} and {}".format(pair[0], pair[1])
+            logger.info(info_str)
+            print("--- {} ---".format(info_str))
     else:
-        print("\n--- All activity files are identical ---")
+        info_str = "All activity files are identical"
+        logger.info(info_str)
+        print("\n--- {} ---".format(info_str))
 
 
 
@@ -192,11 +248,19 @@ def calc_emissions(species, ef_file, act_file, out_path):
     out_path : str
         Directory to write the resulting emissions file to
     """
-    print('Calculating frozen total emissions for {}'.format(species))
+    logger = logging.getLogger("validate")
+    logger.info('In validate::calc_emissions()')
+    
+    info_str = 'Calculating frozen total emissions for {}'.format(species)
+    logger.info(info_str)
+    print(info_str)
     
     data_col_headers = ['X{}'.format(i) for i in range(1750, 2015)]
     
+    logger.info('Reading emission factor file from {}'.format(ef_file))
     ef_df = pd.read_csv(ef_file, sep=',', header=0)
+    
+    logger.info('Reading activity file from {}'.format(act_df))
     act_df = pd.read_csv(act_file, sep=',', header=0)
     
     # Get the 'iso', 'sector', 'fuel', & 'units' columns
@@ -204,14 +268,17 @@ def calc_emissions(species, ef_file, act_file, out_path):
     
     # Sanity check
     if (meta_cols.equals(act_df.iloc[:, 0:4])):
-        raise ValueError('Emission Factor & Activity DataFrames have mis-matched meta columns')
+        err_str = 'Emission Factor & Activity DataFrames have mis-matched meta columns'
+        logger.error(err_str)
+        raise ValueError(err_str)
     
     # Get a subset of the emission factor & activity files that contain numerical
     # data so we can compute emissions
+    logger.info('Subsetting emission factor & activity DataFrames')
     ef_subs = ef_df[data_col_headers]
     act_subs = act_df[data_col_headers]
     
-    
+    logger.info('Calculating total emissions')
     emissions_df = pd.DataFrame(ef_subs.values * act_subs.values,
                                 columns=ef_subs.columns, index=ef_subs.index)
     
@@ -219,27 +286,35 @@ def calc_emissions(species, ef_file, act_file, out_path):
     
     f_out = join(out_path, f_name)
     
-    print('     writing to file....')
+    logger.info('Writing total emissions DataFrame to {}'.format(f_out))
+    print('     writing to file....\n')
     
     emissions_df.to_csv(f_out, sep=',', header=True, index=False)
+    logger.info('Finished calculating total emissions for {}'.format(species))
     
     
     
 def main():
-    
+    logger = setup_logger()
+    logger.info('In validate::main()')
     """
     Tasks to run calc_emissions() for frozen emission factor files
     """
+    logger.info('Initializing data directory paths')
     
-    base_dir_ef = r"C:\Users\nich980\data\e-freeze\dat_out\ef_files"
-    base_dir_act = r"C:\Users\nich980\data\CEDS_CMIP6_Release_Archive\intermediate-output"
-    out_path_ems = r"C:\Users\nich980\data\e-freeze\dat_out\frozen_emissions"
-#    out_path_act = r"C:\Users\nich980\data\e-freeze\dat_out\frozen_activity"
+    dirs = {
+            'base_dir_ef': r"C:\Users\nich980\data\e-freeze\dat_out\ef_files",
+            'base_dir_act' : r"C:\Users\nich980\data\CEDS_CMIP6_Release_Archive\intermediate-output",
+            'out_path_ems' : r"C:\Users\nich980\data\e-freeze\dat_out\frozen_emissions"
+            }
     
-#    diff_activity_files(base_dir_act)
+    for key, val in dirs.items():
+        logger.info('{}: {}'.format(key, val))
+        
+    diff_activity_files(dirs['base_dir_act'])
     
     # Emission species in the above directory
-    em_species = ceds_io.get_avail_species(base_dir_ef)
+    em_species = ceds_io.get_avail_species(dirs['base_dir_ef'])
     
     for species in em_species:
         
