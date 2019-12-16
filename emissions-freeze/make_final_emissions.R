@@ -1,8 +1,6 @@
 
-# em_list <- c( "BC", "CH4", "CO", "CO2", "NH3", "NMVOC", "NOx", "OC", "SO2" )
-
- em_list <- c( "BC", "CH4", "CO", "CO2", "NH3", "NOx", "OC", "SO2" )
-# em_list <- c( "BC" )
+em_list <- c( "BC", "CH4", "CO", "CO2", "NH3", "NMVOC", "NOx", "OC", "SO2" )
+# em_list <- c( "NMVOC" )
 
 setwd("C:/Users/nich980/code/CEDS")
 
