@@ -291,7 +291,7 @@ def plot_gcam_scanarios(model_df, model='GCAM'):
     cols = 4
     rows = 4
     
-    fig, axs = plt.subplots(rows, cols, figsize=figsize, constrained_layout=True)
+    fig, axs = plt.subplots(rows, cols, figsize=figsize, dpi=150, constrained_layout=True)
     fig.suptitle('{} Emission Species & Scenarios'.format(model), fontsize=16)
     
     axs = trim_axs(axs, len(em_species))
@@ -326,7 +326,8 @@ def plot_gcam_scanarios(model_df, model='GCAM'):
     
     handles, labels = ax.get_legend_handles_labels()
 #    fig.legend(handles, labels, loc='lower right', ncol=2)
-    leg = fig.legend(handles, labels, loc=4, bbox_to_anchor=(0.97,0.23), ncol=2, title='GCAM Scenarios')
+    leg = fig.legend(handles, labels, loc=4, bbox_to_anchor=(0.98,0.17), prop={'size': 8}, 
+                     ncol=2, title='GCAM Scenarios')
     
     for legobj in leg.legendHandles:
         legobj.set_linewidth(3.0)
@@ -466,7 +467,8 @@ def main():
     
     # Get the GCAM data in a DataFrame
     em_df = get_model_df(f_abs, model="GCAM")
-    plot_fluorocarbons(em_df)
+#    plot_fluorocarbons(em_df)
+    plot_gcam_scanarios(em_df)
     
 #    print(em_df.columns.tolist())
 #    plot_model_facet(em_df, 'GCAM')
