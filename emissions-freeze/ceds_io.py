@@ -414,17 +414,24 @@ def reconstruct_ef_df(ef_df_actual, efsubset_obj, year_strs):
     sector = efsubset_obj.sector
     fuel   = efsubset_obj.fuel
     
-    # Case: year = 1970
-    year_str_0 = year_strs[0]
-    
     for idx, iso in enumerate(efsubset_obj.isos):
         # df.loc[df[<some_column_name>] == <condition>, [<another_column_name>]] = <value_to_add>
         ef_df_actual.loc[(ef_df_actual['iso'] == iso) & (ef_df_actual['sector'] == sector) &
                          (ef_df_actual['fuel'] == fuel), [year_str_0]] = efsubset_obj.ef_data[idx]
+        
+    return ef_df_actual
+    
+    
+    
+def reconstruct_ef_df_final(ef_df_actual, efsubset_obj, year_strs):
+    logger = logging.getLogger(efsubset_obj.species)
+    logger.info("Overwriting EF DataFrame values for years >= 1970\n")
+    
+    # X1970
+    year_str_0 = year_strs[0]
     
     # Copy the 1970 column to the columns of years > 1970
     # MASSIVELY faster than repeating the above loop for every year
-    logger.info("Overwriting EF DataFrame values for years >= 1970\n")
     for yr in year_strs[1:]:
         ef_df_actual[yr] = ef_df_actual[year_str_0]
         
