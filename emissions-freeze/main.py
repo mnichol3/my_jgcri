@@ -18,11 +18,19 @@ import efsubset
 
 
 
-def nuke_logs():
+def nuke_logs(target=None):
     cwd = getcwd()
     log_dir = join(cwd, "logs")
     
-    log_files = [f for f in listdir(log_dir) if f.endswith(".log")]
+    if (target):
+        log_name = "{}.log".format(target)
+        log_files = [f for f in listdir(log_dir) if f == log_name]
+        target_str = log_name
+    else:
+        log_files = [f for f in listdir(log_dir) if f.endswith(".log")]
+        target_str = 'all logs'
+    
+    print('--- Removing {} from logs/ ---\n'.format(target_str))
    
     for f in log_files:
 #        print("Deleting {}".format(f))
@@ -30,12 +38,13 @@ def nuke_logs():
 
 
 
-def setup_logger(species):
+def setup_logger(log_name):
+    nuke_logs(target=log_name)
     
     log_format = logging.Formatter("%(asctime)s %(levelname)6s: %(message)s", "%Y-%m-%d %H:%M:%S")
     
     cwd = getcwd()
-    f_name = '{}.log'.format(species)
+    f_name = '{}.log'.format(log_name)
     
     f_dir = join(cwd, 'logs')
     local_dir = join('logs', f_name)
@@ -46,7 +55,7 @@ def setup_logger(species):
     handler = logging.FileHandler(local_dir)
     handler.setFormatter(log_format)
         
-    logger = logging.getLogger(species)
+    logger = logging.getLogger(log_name)
     logger.setLevel(logging.DEBUG)
     logger.addHandler(handler)
     
@@ -80,10 +89,9 @@ def freeze_emissions(dirs, year, ef_files=None):
 #                'z_thresh'      : 3
 #               }
     
-    logger = logging.getLogger("main")
+    main_log = logging.getLogger("main")
     main_log.info("In main::freeze_emissions()")
     main_log.info("data_path = {}".format(data_path))
-    main_log.info("num_outliers = {}".format(num_outlier_iters))
     main_log.info("year = {}\n".format(year))
     
     # Get all Emission Factor filenames in the directory
@@ -101,28 +109,24 @@ def freeze_emissions(dirs, year, ef_files=None):
         
         max_yr = ef_df.columns.values.tolist()[-1]
         
-        species_log = setup_logger(species)
-        
         # Get all non-combustion sectors
         for sector in ceds_io.get_sectors(ef_df):
             
             for fuel in fuels:
                 
                 main_log.info("Processing {}...{}...{}".format(species, sector, fuel))
-                species_log.info("Processing {}...{}".format(sector, fuel))
                 
                 print("\nProcessing {}...{}...{}...".format(species, sector, fuel))
         
                 # Read the EF data into an EFSubset object
                 main_log.info("Subsetting EF DF for year {}".format(year))
-                species_log.info("Subsetting EF DF for year {}".format(year))
                 efsubset_obj = efsubset.EFSubset(ef_df, sector, fuel, species, year)
                 
-                if (not efsubset_obj.ef_data.size == 0):
+                if (efsubset_obj.ef_data.size != 0):
         
                     # Calculate the median of the EF values
                     ef_median = quick_stats.get_ef_median(efsubset_obj)
-                    species_log.debug("EF data array median: {}".format(ef_median))
+                    main_log.debug("EF data array median: {}".format(ef_median))
                     
                     # Use num_outlier_iters + 1 bc of how range() handles the upper bound
     #                for i in range(num_outlier_iters):
@@ -135,11 +139,9 @@ def freeze_emissions(dirs, year, ef_files=None):
     #                    ef_obj_boxcox.ef_data = boxcox
                         
                         # Identify outliers based on the box cox transform EF data
-                    species_log.info("Identifying outliers")
                     main_log.info("Identifying outliers")
                     outliers = quick_stats.get_outliers_zscore(efsubset_obj)
                     
-                    species_log.info("Setting outlier values to median EF value")
                     main_log.info("Setting outlier values to median EF value")
                     
                     # Set the EF value of each idenfitied outlier to the median of the EF values
@@ -152,28 +154,26 @@ def freeze_emissions(dirs, year, ef_files=None):
                     year_strs = ['X{}'.format(yr) for yr in range(1970, int(max_yr[1:]) + 1)]
                     
                     # Overwrite the current EFs for years >= 1970
-                    species_log.info("Overwriting original EF DataFrame with new EF values")
                     main_log.info("Overwriting original EF DataFrame with new EF values\n")
                     ef_df = ceds_io.reconstruct_ef_df(ef_df, efsubset_obj, year_strs)
                 else:
-                    species_log.warning("Subsetted EF dataframe is empty")
+                    main_log.warning("Subsetted EF dataframe is empty")
                 
             # End fuel for-loop
         # End sector for-loop
-        ef_df = reconstruct_ef_df_final(ef_df, efsubset_obj, year_strs)
         
         # Copy the 1970 column values to every column >= 1970
-        reconstruct_ef_df_final
+        main_log.info("Reconstructing final EF DataFrame")
+        ef_df = ceds_io.reconstruct_ef_df_final(ef_df, efsubset_obj, year_strs)
+        
         f_out = r"C:\Users\nich980\data\e-freeze\dat_out\ef_files"
         f_out = join(f_out, f_name)
         
         main_log.info("Writing resulting {} DataFrame to file".format(species))
-        species_log.info("Writing resulting DataFrame to file")
         
         print('Writing final {} DataFrame to: {}'.format(species, f_out))
         ef_df.to_csv(f_out, sep=',', header=True, index=False)
         main_log.info("DataFrame written to {}\n".format(f_out))
-        species_log.info("DataFrame written to {}\n".format(f_out))
         
     # End EF file for-loop
     main_log.info("Finished processing all species")
@@ -252,6 +252,15 @@ def calc_emissions(dir_dict, em_species=None):
         ef_subs = ef_df[data_col_headers]
         act_subs = act_df[data_col_headers]
         
+        if (ef_subs.shape != act_subs.shape):
+            # Error is arising where:
+            # ef_subs.shape =  (55212, 265) &
+            # act_subs.shape = (54772, 265)
+            # ValueError will be raised by pandas
+            logger.error('ValueError: ef_subs & act_subs could not be broadcast together')
+            logger.debug('ef_subs.shape {}'.format(ef_subs.shape))
+            logger.debug('act_subs.shape {}'.format(act_subs.shape))
+        
         logger.info('Calculating total emissions')
         emissions_df = pd.DataFrame(ef_subs.values * act_subs.values,
                                     columns=ef_subs.columns, index=ef_subs.index)
@@ -281,7 +290,7 @@ def calc_emissions(dir_dict, em_species=None):
 def main():
     ##### Log housekeeping #####
     # Delete any old log files
-    # nuke_logs()
+    # nuke_logs(tartet='main')
     
     # Set up new main log
     main_log = setup_logger('main')
@@ -297,7 +306,7 @@ def main():
                 'out_path_ems' : r"C:\Users\nich980\data\e-freeze\dat_out\frozen_emissions"
                 }
     
-    # freeze_emissions(dir_dict, year, ef_files=ef_files)
+    freeze_emissions(dir_dict, year, ef_files=ef_files)
     
     calc_emissions(dir_dict, em_species=species)
     

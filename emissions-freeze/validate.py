@@ -74,7 +74,7 @@ def diff_activity_files(dir_path):
     None
     
     """
-    logger = logging.getLogger("validate")
+    logger = logging.getLogger('main')
     logger.info('In validate::diff_activity_files()')
     
     activity_files = []
@@ -248,7 +248,7 @@ def calc_emissions(dir_dict):
     -------
     None, writes to file
     """
-    logger = logging.getLogger("validate")
+    logger = logging.getLogger('main')
     logger.info('In validate::calc_emissions()')
     
     # Unpack for better readability

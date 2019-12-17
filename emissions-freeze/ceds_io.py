@@ -408,11 +408,13 @@ def filter_data_sector(df):
 
 
 def reconstruct_ef_df(ef_df_actual, efsubset_obj, year_strs):
-    logger = logging.getLogger(efsubset_obj.species)
+    logger = logging.getLogger('main')
     logger.info("Overwriting EF DataFrame values for year = 1970")
     
     sector = efsubset_obj.sector
     fuel   = efsubset_obj.fuel
+    
+    year_str_0 = year_strs[0]
     
     for idx, iso in enumerate(efsubset_obj.isos):
         # df.loc[df[<some_column_name>] == <condition>, [<another_column_name>]] = <value_to_add>
@@ -424,7 +426,7 @@ def reconstruct_ef_df(ef_df_actual, efsubset_obj, year_strs):
     
     
 def reconstruct_ef_df_final(ef_df_actual, efsubset_obj, year_strs):
-    logger = logging.getLogger(efsubset_obj.species)
+    logger = logging.getLogger('main')
     logger.info("Overwriting EF DataFrame values for years >= 1970\n")
     
     # X1970

@@ -85,7 +85,7 @@ def get_outliers_zscore(efsubset_obj, thresh=3):
     outliers : list of tuple - (str, float, float)
         ISOs and their respective EFs & z-scores that have been identified as outliers
     """
-    logger = logging.getLogger(efsubset_obj.species)
+    logger = logging.getLogger('main')
     logger.info("Calculating Z-scores...")
     
     outliers = []
@@ -123,7 +123,7 @@ def get_outliers_std(efsubset_obj):
     outliers : list of tuple - (str, float)
         ISOs and their respective EFs that have been identified as outliers
     """
-    logger = logging.getLogger(efsubset_obj.species)
+    logger = logging.getLogger('main')
     logger.info("Idenfitying outliers using Standard Deviation method...")
     
     outliers = []
@@ -159,7 +159,7 @@ def get_outliers_iqr(efsubset_obj, outlier_const=1.5):
     outliers : list of tuple - (str, float)
         ISOs and their respective EFs that have been identified as outliers
     """
-    logger = logging.getLogger(efsubset_obj.species)
+    logger = logging.getLogger('main')
     logger.info("Calculating IQR...")
     
     outliers = []
@@ -198,7 +198,7 @@ def get_boxcox(efsubset_obj):
     lam : float
         The lambda that maximizes the log-likelihood function
     """
-    logger = logging.getLogger(efsubset_obj.species)
+    logger = logging.getLogger('main')
     logger.info("Performing Box Cox transform...")
     
     data = np.asarray(efsubset_obj.ef_data, dtype=np.float64)

@@ -58,7 +58,7 @@ class EFSubset:
         -------
         EFSubset obj
         """
-        logger = logging.getLogger(species)
+        logger = logging.getLogger('main')
         logger.info("Initializing EFSubset object: {} {} {}".format(sector, fuel, year))
         
         self.sector     = sector
