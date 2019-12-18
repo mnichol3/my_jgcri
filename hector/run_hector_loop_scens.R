@@ -10,6 +10,8 @@ scenarios <- c("gas_paris_med",
                "gas_no_paris_med",
                "gas_ref_med")
 
+# scenarios <- c("gas_paris_med")
+
 #                   Ca              Ftot        Tgav
 out_vars <- c(ATMOSPHERIC_CO2(), RF_TOTAL(), GLOBAL_TEMP(), PH_HL(), PH_LL())
 
@@ -30,5 +32,7 @@ for ( scen in scenarios ) {
 
     results <- fetchvars(core, 1745:2300, vars=out_vars)
 
-    write.csv(results, f_out)
+    results_rs <- reshape(results, idvar=c("year", "scenario"), timevar="variable", direction="wide")
+
+    write.csv(results_rs, f_out, row.names = FALSE)
 }
