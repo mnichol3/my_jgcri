@@ -10,6 +10,8 @@ Last updated: 19 Dec 2019
 
 This branch was created in order to address [JGCRI #328](https://github.com/JGCRI/hector/issues/328), and aims to add time series capability to atmopsphere & ocean components
 
+**Pulled** `fetchvars_all` **changes committed to master on 19 Dec 19**
+
   * ocean_component.cpp
     * Modify the assertion at the beginning of `OceanComponent::getData` to check that the date parameter is appropriate for the given varNAme
     * Ocean Carbon (`D_OCEAN_C` & `D_Carbon_*`)
