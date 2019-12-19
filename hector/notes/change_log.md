@@ -12,7 +12,7 @@ This branch was created to address [JGCRI #330](https://github.com/JGCRI/hector/
   * Merged into `origin/master` on 19 Dec 19
   * Pull request to `JGCRI/master` made on 19 Dec 19
 
-
+<br/>
 
 ## fix/ocean_component-timeSeries
 
