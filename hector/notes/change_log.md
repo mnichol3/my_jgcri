@@ -4,13 +4,24 @@ Document to track changes made to fork of JGCRI/hector
 
 Last updated: 19 Dec 2019
 
-## By Branch
+## fetchvars_all
 
-### fix/ocean_component-timeSeries
+This branch was created to address [JGCRI #330](https://github.com/JGCRI/hector/issues/330) and introduces the function `fetchvars_all` and three helper functions: `cum_vars_input`, `cum_vars_params`, `cum_vars_output`. These functions are held in `./R/messages.R`.
+
+#### Actions
+  * Merged into `origin/master` on 19 Dec 19
+  * Pull request to `JGCRI/master` made on 19 Dec 19
+
+
+
+## fix/ocean_component-timeSeries
 
 This branch was created in order to address [JGCRI #328](https://github.com/JGCRI/hector/issues/328), and aims to add time series capability to atmopsphere & ocean components
 
-**Pulled** `fetchvars_all` **changes committed to master on 19 Dec 19**
+#### Actions
+
+
+#### Specifics
 
   * ocean_component.cpp
     * Modify the assertion at the beginning of `OceanComponent::getData` to check that the date parameter is appropriate for the given varNAme
