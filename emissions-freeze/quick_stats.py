@@ -11,6 +11,9 @@ import logging
 from os.path import join
 from scipy import stats
 
+import warnings
+warnings.filterwarnings("error")    # Treat RuntimeWarnings as error
+
 import ceds_io
 
 
@@ -97,8 +100,8 @@ def get_outliers_zscore(efsubset_obj, thresh=3):
             score = np.abs(stats.zscore(efsubset_obj.ef_data))
             
             bad_z = np.where(score > thresh)[0]
-        except:
-            logger.error("Error calculating z-score. Returning empty outlier array")
+        except RuntimeWarning:
+            logger.error("RuntimeWarning caught while calculating z-score. Returning empty outlier array")
         else:
             for z_idx in bad_z:
                 outliers.append((efsubset_obj.isos[z_idx], efsubset_obj.ef_data[z_idx], z_idx))
