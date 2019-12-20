@@ -116,7 +116,14 @@ def diff_activity_files(dir_path):
             if (not df1.equals(df2)):
                 # If the two dataframes are not identical, add them to a list
                 # to be printed at the end of function execution
-                mismatch.append([act_file, activity_files[j]])
+                mismatch_f1 = act_file
+                mismatch_f2 = activity_files[j]
+                
+                # Only add a pair of mismatched activity files once
+                if ([mismatch_f1, mismatch_f2] not in mismatch and 
+                    [mismatch_f2, mismatch_f1] not in mismatch):
+                    
+                    mismatch.append([mismatch_f1, mismatch_f2])
             
             del df2
         del df1
@@ -333,9 +340,11 @@ def main():
     """
     logger.info('Initializing data directory paths')
     
+    #'base_dir_act' : r"C:\Users\nich980\data\CEDS_CMIP6_Release_Archive\intermediate-output",
+    
     dirs = {
             'base_dir_ef': r"C:\Users\nich980\data\e-freeze\dat_out\ef_files",
-            'base_dir_act' : r"C:\Users\nich980\data\CEDS_CMIP6_Release_Archive\intermediate-output",
+            'base_dir_act' : r"C:\Users\nich980\data\CEDS\CEDS\intermediate-output",
             'out_path_ems' : r"C:\Users\nich980\data\e-freeze\dat_out\frozen_emissions"
             }
     
@@ -343,8 +352,6 @@ def main():
         logger.info('{}: {}'.format(key, val))
         
     diff_activity_files(dirs['base_dir_act'])
-    
-    calc_emissions(dirs)
         
         
         
