@@ -92,14 +92,18 @@ def get_outliers_zscore(efsubset_obj, thresh=3):
     
     # If we have an array of all zeros, do nothing
     if (not np.all(efsubset_obj.ef_data[0] == 0.0)):
-        score = np.abs(stats.zscore(efsubset_obj.ef_data))
         
-        bad_z = np.where(score > thresh)[0]
-        
-        for z_idx in bad_z:
-            outliers.append((efsubset_obj.isos[z_idx], efsubset_obj.ef_data[z_idx], z_idx))
+        try:
+            score = np.abs(stats.zscore(efsubset_obj.ef_data))
             
-        logger.debug("Outliers identified: {}".format(len(outliers)))
+            bad_z = np.where(score > thresh)[0]
+        except:
+            logger.error("Error calculating z-score. Returning empty outlier array")
+        else:
+            for z_idx in bad_z:
+                outliers.append((efsubset_obj.isos[z_idx], efsubset_obj.ef_data[z_idx], z_idx))
+                
+            logger.debug("Outliers identified: {}".format(len(outliers)))
     else:
         logger.debug("EF data array is all zeros. Returning empty outlier array")
         
