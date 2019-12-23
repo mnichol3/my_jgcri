@@ -84,6 +84,8 @@ packages <- c(
 for ( pckg in names( packages ) ){
 
     print( glue( "Checking {pckg}..." ) )
+    
+    vers_num <- packages[[pckg]]
 
     if ( pckg %in% rownames( lib_matrix ) == FALSE ){
         ### No version of the package is currently installed
@@ -91,7 +93,7 @@ for ( pckg in names( packages ) ){
         print( glue( "     {pckg} not found! Installing..." ) )
 
         ### Download the package
-        result <- downloadPackage( pckg, packages[[pckg]] )
+        result <- downloadPackage( pckg, vers_num )
         if ( result != 1 ) {
             failed_pckgs <- c( failed_pckgs, pckg )
         }
@@ -103,14 +105,14 @@ for ( pckg in names( packages ) ){
 
         curr_vers <- lib_matrix[pckg, 3]
 
-        if ( curr_vers %in% packages[[pckg]] == FALSE ) {
+        if ( curr_vers != vers_num ) {
             ### Installed package version is not acceptable
 
             print( glue( "     Current version: {curr_vers}" ) )
             print( glue( "     Required:        {vers_num}" ) )
 
             ### Download the package
-            result <- downloadPackage( pckg, packages[[pckg]] )
+            result <- downloadPackage( pckg, vers_num )
             if ( result != 1 ) {
                 failed_pckgs <- c( failed_pckgs, pckg )
             }
