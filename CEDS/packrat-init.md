@@ -42,4 +42,6 @@ Packrat mode on. Using library in directory:
 ## Installing CEDS Dependencies
 After ensuring a successful Packrat installation, its time to install the packages we need to run CEDS. Copy the script `ceds_dep_download.R` into your main CEDS directory and run it. It will look for the specific versions of R packages that CEDS needs to run properly and download them if they aren't found. It will also download the packages' dependencies. 
 
-To be continued...
+## Known issues
+* The `XML` R library sometimes fails to install due to how it be like that sometimes
+* You cannot simply copy & paste a Packrat directory into a new CEDS directory. You have to initialize a new Packrat library in the new directory and re-download the CEDS dependency packages
