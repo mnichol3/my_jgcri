@@ -1,2 +1,6 @@
 # Log directories & files
 /**/logs/
+
+# Hector Rcpp constant .csv's
+hector/rcpp_consant_names.csv
+hector/rcpp_consant_names_pretty.csv
