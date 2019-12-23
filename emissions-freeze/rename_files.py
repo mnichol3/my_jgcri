@@ -44,8 +44,6 @@ def init_parser():
     with a new substring. Ex: python rename_files.py -d 'CEDS\final-emissions\previous-versions' 
     -t '2019_08_25' -n 'frozen'"""
     
-    curr_pwd = os.getcwd()
-    
     parser = argparse.ArgumentParser(description=parse_desc)
     
     parser.add_argument('-d', '--dir', metavar='dir', required=True,
@@ -88,11 +86,7 @@ def main():
     parser = init_parser()
     args = parser.parse_args()
     
-    base_dir = r"C:\Users\nich980\code\CEDS\final-emissions\previous-versions"
-    target_str = "2019_08_25"
-    replace_str = "frozen"
-    
-    rename(base_dir, target_str, replace_str)
+    rename(args.dir, args.target, args.newstr)
     
     
 if __name__ == '__main__':
