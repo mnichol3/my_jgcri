@@ -44,4 +44,12 @@ After ensuring a successful Packrat installation, its time to install the packag
 
 ## Known issues
 * The `XML` R library sometimes fails to install due to how it be like that sometimes
+  * To remedy this issue, use the command `install.packages("XML")` within your CEDS directory to install `XML`
+    
+    Ex:
+    ```
+    $ cd code/CEDS
+    $ R
+    > install.packages("XML")
+    ```
 * You cannot simply copy & paste a Packrat directory into a new CEDS directory. You have to initialize a new Packrat library in the new directory and re-download the CEDS dependency packages
