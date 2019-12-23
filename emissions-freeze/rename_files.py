@@ -40,7 +40,7 @@ def init_parser():
             String to replace the target string with
     """
     
-    pars_desc = """A script to rename file names by replaceing a target substring
+    parse_desc = """A script to rename file names by replaceing a target substring
     with a new substring. Ex: python rename_files.py -d 'CEDS\final-emissions\previous-versions' 
     -t '2019_08_25' -n 'frozen'"""
     
