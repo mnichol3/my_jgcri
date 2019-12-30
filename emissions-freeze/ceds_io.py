@@ -114,9 +114,13 @@ def get_file_for_species(dir_path, species, f_type):
             "ef" : "H.{}_total_EFs_extended.csv",
             "activity": "H.{}_total_activity_extended.csv"
             }
+            
+    logger = logging.getLogger('main')
     
     f_name = bases[f_type].format(species)
     f_abs = join(dir_path, f_name)
+    
+    logger.debug("Searching for file '{}'".format(f_name))
     
     if (not isfile(f_abs)):
         raise FileNotFoundError("No such file or directory: {}".format(f_abs))
@@ -219,6 +223,13 @@ def get_sectors(df, comb_filter=True):
     
     sectors = df['sector'].unique()
     return sectors
+    
+    
+    
+def get_isf(df, iso):
+    sectors = list(df[df['iso'] == iso]['sectors'])
+    fuels = list(df[df['iso'] == iso]['fuel'])
+    return zip(sectors, fuels)
 
 
 
@@ -409,17 +420,32 @@ def filter_data_sector(df):
 
 def reconstruct_ef_df(ef_df_actual, efsubset_obj, year_strs):
     logger = logging.getLogger('main')
-    logger.info("Overwriting EF DataFrame values for year = 1970")
+    logger.info("Constructing final EF DataFrame")
     
     sector = efsubset_obj.sector
     fuel   = efsubset_obj.fuel
     
-    year_str_0 = year_strs[0]
+    logger.debug("Sector = {}; Fuel = {}".format(sector, fuel))
     
+    # for year_str in year_strs:
+        # for idx, iso in enumerate(efsubset_obj.isos):
+            #df.loc[df[<some_column_name>] == <condition>, [<another_column_name>]] = <value_to_add>
+            # logger.debug("iso = {}; EF = {}; year = {}".format(iso, efsubset_obj.ef_data[idx], year_str[1:]))
+            
+            # Locate the row of the CMIP6 EF DataFrame with the corresponding 
+            # iso, sector, & fuel values and overwrite its EF values
+            # ef_df_actual.loc[(ef_df_actual['iso'] == iso) & (ef_df_actual['sector'] == sector) &
+                             # (ef_df_actual['fuel'] == fuel), [year_str]] = efsubset_obj.ef_data[idx]
+                             
     for idx, iso in enumerate(efsubset_obj.isos):
         # df.loc[df[<some_column_name>] == <condition>, [<another_column_name>]] = <value_to_add>
-        ef_df_actual.loc[(ef_df_actual['iso'] == iso) & (ef_df_actual['sector'] == sector) &
-                         (ef_df_actual['fuel'] == fuel), [year_str_0]] = efsubset_obj.ef_data[idx]
+        
+        # For the CMIP6 EF DataFrame row corresponding to the given iso, sector,
+        # and fuel, overwrite the values for years >= 1970 with the frozen EF 
+        ef_df_actual.loc[(ef_df_actual['iso'] == iso) &
+                         (ef_df_actual['sector'] == sector) &
+                         (ef_df_actual['fuel'] == fuel),
+                         year_strs] = efsubset_obj.ef_data[idx]
         
     return ef_df_actual
     

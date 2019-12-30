@@ -13,8 +13,8 @@ import pandas as pd
 import ceds_io
 import quick_stats
 import efsubset
-#import validate
-#import plotting
+
+from sys import exit
 
 
 
@@ -97,6 +97,9 @@ def freeze_emissions(dirs, year, ef_files=None):
     # Get all Emission Factor filenames in the directory
     if (not ef_files):
         ef_files = ceds_io.fetch_ef_files(data_path)
+        
+    # Construct the column header strings for years >= 1970
+    year_strs = ['X{}'.format(yr) for yr in range(1970, 2014 + 1)]
     
     # Begin for-loop over each species EF file
     for f_name in ef_files:
@@ -107,6 +110,9 @@ def freeze_emissions(dirs, year, ef_files=None):
         main_log.info("Loading EF DataFrame from {}".format(join(data_path, f_name)))
         ef_df = ceds_io.read_ef_file(join(data_path, f_name))
         
+        # print(ef_df.shape)
+        # exit(0)
+        
         max_yr = ef_df.columns.values.tolist()[-1]
         
         # Get all non-combustion sectors
@@ -114,9 +120,9 @@ def freeze_emissions(dirs, year, ef_files=None):
             
             for fuel in fuels:
                 
-                main_log.info("Processing {}...{}...{}".format(species, sector, fuel))
+                main_log.info("--- Processing {}...{}...{}---".format(species, sector, fuel))
                 
-                print("\nProcessing {}...{}...{}...".format(species, sector, fuel))
+                print("Processing {}...{}...{}...".format(species, sector, fuel))
         
                 # Read the EF data into an EFSubset object
                 main_log.info("Subsetting EF DF for year {}".format(year))
@@ -150,11 +156,8 @@ def freeze_emissions(dirs, year, ef_files=None):
                     
                     #quick_stats.plot_df(ef_obj, plt_opts)
                     
-                    # Construct the column header strings for years >= 1970
-                    year_strs = ['X{}'.format(yr) for yr in range(1970, int(max_yr[1:]) + 1)]
-                    
                     # Overwrite the current EFs for years >= 1970
-                    main_log.info("Overwriting original EF DataFrame with new EF values\n")
+                    main_log.info("Overwriting original EF DataFrame with new EF values")
                     ef_df = ceds_io.reconstruct_ef_df(ef_df, efsubset_obj, year_strs)
                 else:
                     main_log.warning("Subsetted EF dataframe is empty")
@@ -163,15 +166,15 @@ def freeze_emissions(dirs, year, ef_files=None):
         # End sector for-loop
         
         # Copy the 1970 column values to every column >= 1970
-        main_log.info("Reconstructing final EF DataFrame")
-        ef_df = ceds_io.reconstruct_ef_df_final(ef_df, efsubset_obj, year_strs)
+        # main_log.info("Reconstructing final EF DataFrame")
+        # ef_df = ceds_io.reconstruct_ef_df_final(ef_df, efsubset_obj, year_strs)
         
         f_out = r"C:\Users\nich980\data\e-freeze\dat_out\ef_files"
         f_out = join(f_out, f_name)
         
         main_log.info("Writing resulting {} DataFrame to file".format(species))
         
-        print('Writing final {} DataFrame to: {}'.format(species, f_out))
+        print('Writing final {} DataFrame to: {}\n'.format(species, f_out))
         ef_df.to_csv(f_out, sep=',', header=True, index=False)
         main_log.info("DataFrame written to {}\n".format(f_out))
         
@@ -203,13 +206,18 @@ def calc_emissions(dir_dict, em_species=None):
     
     # Unpack for better readability
     base_dir_ef = dir_dict['dir_ef_freeze']
-    base_dir_act = dir_dict['dir_ef_actual']
+    base_dir_act = dir_dict['dir_activity']
     out_path_ems = dir_dict['out_path_ems']
     
     logger.info('Searing for available species in {}'.format(base_dir_ef))
     
     if (not em_species):
         em_species = ceds_io.get_avail_species(base_dir_ef)
+    
+    logger.info('Emission species found: {}'.format(len(em_species)))
+    
+    # Create list of strings representing year column headers
+    data_col_headers = ['X{}'.format(i) for i in range(1750, 2015)]
     
     for species in em_species:
         info_str = 'Calculating frozen total emissions for {}'.format(species)
@@ -222,13 +230,16 @@ def calc_emissions(dir_dict, em_species=None):
         
         # Get activity file for species
         logger.info('Fetching activity file from {}'.format(base_dir_act))
-        activity_file = ceds_io.get_file_for_species(base_dir_act, species, "activity")
+        try:
+            activity_file = ceds_io.get_file_for_species(base_dir_act, species, "activity")
+        except:
+            err_msg = 'No activity file found for {}'.format(species)
+            logger.error(err_msg)
+            print(err_msg)
+            continue
         
         ef_path = join(base_dir_ef, frozen_ef_file)
         act_path = join(base_dir_act, activity_file)
-        
-        # Create list of strings representing year column headers
-        data_col_headers = ['X{}'.format(i) for i in range(1750, 2015)]
         
         # Read emission factor & activity files into DataFrames
         logger.info('Reading emission factor file from {}'.format(ef_path))
@@ -252,16 +263,16 @@ def calc_emissions(dir_dict, em_species=None):
         ef_subs = ef_df[data_col_headers]
         act_subs = act_df[data_col_headers]
         
+        logger.info('Calculating total emissions')
+        
         if (ef_subs.shape != act_subs.shape):
-            # Error is arising where:
-            # ef_subs.shape =  (55212, 265) &
-            # act_subs.shape = (54772, 265)
+            # Error is arising where ef_subs.shape = (55212, 265) &
+            # act_subs.shape = (54772, 265).
             # ValueError will be raised by pandas
             logger.error('ValueError: ef_subs & act_subs could not be broadcast together')
             logger.debug('ef_subs.shape {}'.format(ef_subs.shape))
             logger.debug('act_subs.shape {}'.format(act_subs.shape))
         
-        logger.info('Calculating total emissions')
         emissions_df = pd.DataFrame(ef_subs.values * act_subs.values,
                                     columns=ef_subs.columns, index=ef_subs.index)
         
@@ -297,18 +308,19 @@ def main():
     ############################
     
     year = 1970
-    ef_files = ["H.CO2_total_EFs_extended.csv", "H.CH4_total_EFs_extended.csv"]
-    species = ["CO2", "CH4"]
+    ef_files = ["H.SO2_total_EFs_extended.csv"]
+    species = ["SO2"]
     
     dir_dict = {
-                'dir_ef_actual': r"C:\Users\nich980\data\CEDS\CEDS\intermediate-output",
-                'dir_ef_freeze': r"C:\Users\nich980\data\e-freeze\dat_out\ef_files",
-                'out_path_ems' : r"C:\Users\nich980\data\e-freeze\dat_out\frozen_emissions"
+                'dir_ef_actual': r"C:\Users\nich980\data\e-freeze\CMIP6-emissions\intermediate-output",
+                'dir_ef_freeze': r"C:\Users\nich980\data\e-freeze\frozen-emissions\em-factors",
+                'out_path_ems' : r"C:\Users\nich980\data\e-freeze\frozen-emissions\total-emissions",
+                'dir_activity' : r"C:\Users\nich980\data\e-freeze\CMIP6-emissions\intermediate-output"
                 }
     
-    freeze_emissions(dir_dict, year, ef_files=ef_files)
+    freeze_emissions(dir_dict, year) #, ef_files=ef_files)
     
-    calc_emissions(dir_dict, em_species=species)
+    calc_emissions(dir_dict) #, em_species=species)
     
     
     
