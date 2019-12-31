@@ -123,17 +123,6 @@ def freeze_emissions(dirs, year, ef_files=None):
                     ef_median = quick_stats.get_ef_median(efsubset_obj)
                     main_log.debug("EF data array median: {}".format(ef_median))
                     
-                    # Use num_outlier_iters + 1 bc of how range() handles the upper bound
-    #                for i in range(num_outlier_iters):
-                    
-    #                    ef_median = quick_stats.get_ef_median(ef_obj)
-                        
-                        # Compute a box cox transform for the EF data
-    #                    boxcox, lam = quick_stats.get_boxcox(ef_obj)
-    #                    ef_obj_boxcox = copy.deepcopy(ef_obj)
-    #                    ef_obj_boxcox.ef_data = boxcox
-                        
-                        # Identify outliers based on the box cox transform EF data
                     main_log.info("Identifying outliers")
                     outliers = quick_stats.get_outliers_zscore(efsubset_obj)
                     
