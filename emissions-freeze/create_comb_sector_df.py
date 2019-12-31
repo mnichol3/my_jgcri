@@ -26,7 +26,7 @@ f_out = "combustion_sectors.csv"
 ################################################################################
 
 
-def parse_dir_dict(ceds_dir, out_dir, f_out):
+def parse_dir_dict():
     dir_dict = {'ceds_dir': ceds_dir,
                 'out_dir' : out_dir,
                 'f_out'   : f_out
@@ -75,7 +75,7 @@ def create_csv(dirs):
     
     
 def main():
-    dirs = parse_dir_dict(ceds_dir, out_dir, f_out)
+    dirs = parse_dir_dict()
     _, df = create_csv(dirs)
     print(df)
     

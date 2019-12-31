@@ -11,7 +11,9 @@ import re
 import logging
 import pandas as pd
 from os.path import isfile, join
-from os import listdir
+from os import listdir, getcwd
+
+import create_comb_sector_df
 
 
 def read_ef_file(abs_path):
@@ -218,11 +220,20 @@ def get_sectors(df, comb_filter=True):
     sectors = numpy array of str
         Array containing the sectors present in the emissions DataFrame
     """
+    logger = logging.getLogger('main')
+    logger.info("In ceds_io::get_sectors")
+    
     if (comb_filter):
+        logger.debug("Calling filter_data_sector")
         df = filter_data_sector(df)
     
-    sectors = df['sector'].unique()
-    return sectors
+    sectors = df['sector'].unique().tolist()
+    fuels = df['fuel'].unique().tolist()
+    
+    logger.debug("len(sectors) = {}".format(len(sectors))
+    logger.debug("len(fuels) = {}".format(len(fuels))
+    
+    return (sectors, fuels)
     
     
     
@@ -401,18 +412,54 @@ def filter_data_sector(df):
     df_filtered : Pandas DataFrame
         DataFrame containing data only for the specified sector
         
-    CEDS Working Sectors (as defined by Hoesly et al. 2018)
-    -----
-    * Combustion:       1A1 - 1A5
-    * Non-combustion:   1A1bc, 1B1 - 1B7
+    Combustion sectors (defined by Master_Fuel_Sector_List.xlsx)
+    -------------------
+    1A1a_Electricity-public
+    1A1a_Electricity-autoproducer
+    1A1a_Heat-production
+    1A2a_Ind-Comb-Iron-steel
+    1A2b_Ind-Comb-Non-ferrous-metals
+    1A2c_Ind-Comb-Chemicals
+    1A2d_Ind-Comb-Pulp-paper
+    1A2e_Ind-Comb-Food-tobacco
+    1A2f_Ind-Comb-Non-metalic-minerals
+    1A2g_Ind-Comb-Construction
+    1A2g_Ind-Comb-transpequip
+    1A2g_Ind-Comb-machinery
+    1A2g_Ind-Comb-mining-quarying
+    1A2g_Ind-Comb-wood-products
+    1A2g_Ind-Comb-textile-leather
+    1A2g_Ind-Comb-other
+    1A3ai_International-aviation
+    1A3aii_Domestic-aviation
+    1A3b_Road
+    1A3c_Rail
+    1A3di_International-shipping
+    1A3dii_Domestic-navigation
+    1A3eii_Other-transp
+    1A4a_Commercial-institutional
+    1A4b_Residential
+    1A4c_Agriculture-forestry-fishing
+    1A5_Other-unspecified
     """
-    sec_pattern = r'^1A[1-5]'
-    sec_exclude = '1A1bc'
+    if (not isfile('combustion_sectors.csv')):
+        print( ("Warning: Combustion sector csv not found in current directory. "
+                "Calling create_comb_sector_df.py to create the file.\n"
+                "Please ensure the variable 'ceds_dir' in create_comb_sector_df.py "
+                "contains the correct path to your local CEDS directory") )
+                
+        dir_dict = create_comb_sector_df.parse_dir_dict()
+        dir_dict['out_dir'] = getcwd()
+        
+        _, comb_df = create_comb_sector_df.create_csv(dir_dict)
+    else:
+        comb_df = pd.read_csv('combustion_sectors.csv', sep=',', header=0)
     
-    # Remove sectors that don't begin with the '1A_' combustion prefix
-    # OR begin with the '1A1bc' prefix, which is extremely similar to the 
-    # combustion prefix but is a non-combustion sector
-    df_filtered = df[(df['sector'].str.contains(sec_pattern)) & (df['sector'].str[:5] != sec_exclude)]
+    # Construct a list of combustion sectors from the DataFrame
+    comb_sectors = comb_df['sector'].values.tolist()
+    
+    # Create a new DataFrame containing only combustion sectors from the input dataframe
+    df_filtered = df.loc[df['sector'].isin(comb_sectors)]
     
     return df_filtered
 

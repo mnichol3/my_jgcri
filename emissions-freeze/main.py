@@ -73,21 +73,8 @@ def setup_logger(log_name):
     
 
 def freeze_emissions(dirs, year, ef_files=None):
-    data_path = dirs['dir_ef_actual']
-    out_path = dirs['dir_ef_freeze']
-        
-
-    fuels = ['biomass', 'brown_coal', 'coal_coke', 'diesel_oil',
-             'hard_coal', 'heavy_oil', 'light_oil', 'natural_gas']
-        
-#    plt_opts = {
-#                'show'          : False,
-#                'save'          : True,
-#                'out_path_base' : '',
-#                'out_path_abs'  : out_path_base,
-#                'plot_outliers' : False,
-#                'z_thresh'      : 3
-#               }
+    data_path = dirs['dir_cmip6']
+    out_path = dirs['dir_inter_out']
     
     main_log = logging.getLogger("main")
     main_log.info("In main::freeze_emissions()")
@@ -116,7 +103,9 @@ def freeze_emissions(dirs, year, ef_files=None):
         max_yr = ef_df.columns.values.tolist()[-1]
         
         # Get all non-combustion sectors
-        for sector in ceds_io.get_sectors(ef_df):
+        sectors, fuels = ceds_io.get_sectors(ef_df)
+        
+        for sector in sectors:
             
             for fuel in fuels:
                 
@@ -148,13 +137,14 @@ def freeze_emissions(dirs, year, ef_files=None):
                     main_log.info("Identifying outliers")
                     outliers = quick_stats.get_outliers_zscore(efsubset_obj)
                     
-                    main_log.info("Setting outlier values to median EF value")
-                    
-                    # Set the EF value of each idenfitied outlier to the median of the EF values
-                    for olr in outliers:
-                        efsubset_obj.ef_data[olr[2]] = ef_median
-                    
-                    #quick_stats.plot_df(ef_obj, plt_opts)
+                    if (len(outliers) != 0):
+                        main_log.info("Setting outlier values to median EF value")
+                        
+                        # Set the EF value of each idenfitied outlier to the median of the EF values
+                        for olr in outliers:
+                            efsubset_obj.ef_data[olr[2]] = ef_median
+                    else:
+                        main_log.info("No outliers were identified")
                     
                     # Overwrite the current EFs for years >= 1970
                     main_log.info("Overwriting original EF DataFrame with new EF values")
@@ -165,12 +155,7 @@ def freeze_emissions(dirs, year, ef_files=None):
             # End fuel for-loop
         # End sector for-loop
         
-        # Copy the 1970 column values to every column >= 1970
-        # main_log.info("Reconstructing final EF DataFrame")
-        # ef_df = ceds_io.reconstruct_ef_df_final(ef_df, efsubset_obj, year_strs)
-        
-        f_out = r"C:\Users\nich980\data\e-freeze\dat_out\ef_files"
-        f_out = join(f_out, f_name)
+        f_out = join(out_path, f_name)
         
         main_log.info("Writing resulting {} DataFrame to file".format(species))
         
@@ -195,7 +180,7 @@ def calc_emissions(dir_dict, em_species=None):
     -----------
     dir_dict : dictionary of {str: str}
         Dictionary holding the paths to directories for the various files needed.
-        Keys: ['base_dir_ef', 'base_dir_act', 'out_path_ems']
+        Keys: ['dir_inter_out', 'base_dir_act', 'dir_inter_out']
         
     Return
     -------
@@ -205,28 +190,27 @@ def calc_emissions(dir_dict, em_species=None):
     logger.info('In main::calc_emissions()')
     
     # Unpack for better readability
-    base_dir_ef = dir_dict['dir_ef_freeze']
-    base_dir_act = dir_dict['dir_activity']
-    out_path_ems = dir_dict['out_path_ems']
+    dir_inter_out = dir_dict['dir_inter_out']
+    base_dir_act = dir_dict['dir_cmip6']
     
-    logger.info('Searing for available species in {}'.format(base_dir_ef))
+    logger.info('Searing for available species in {}'.format(dir_inter_out))
     
     if (not em_species):
-        em_species = ceds_io.get_avail_species(base_dir_ef)
+        em_species = ceds_io.get_avail_species(dir_inter_out)
     
-    logger.info('Emission species found: {}'.format(len(em_species)))
+    logger.info('Emission species found: {}\n{}'.format(len(em_species)))
     
     # Create list of strings representing year column headers
     data_col_headers = ['X{}'.format(i) for i in range(1750, 2015)]
     
     for species in em_species:
-        info_str = 'Calculating frozen total emissions for {}'.format(species)
+        info_str = 'Calculating frozen total emissions for {}\n{}'.format(species, "="*45)
         logger.info(info_str)
         print(info_str)
         
         # Get emission factor file for species
-        logger.info('Fetching emission factor file from {}'.format(base_dir_ef))
-        frozen_ef_file = ceds_io.get_file_for_species(base_dir_ef, species, "ef")
+        logger.info('Fetching emission factor file from {}'.format(dir_inter_out))
+        frozen_ef_file = ceds_io.get_file_for_species(dir_inter_out, species, "ef")
         
         # Get activity file for species
         logger.info('Fetching activity file from {}'.format(base_dir_act))
@@ -238,7 +222,7 @@ def calc_emissions(dir_dict, em_species=None):
             print(err_msg)
             continue
         
-        ef_path = join(base_dir_ef, frozen_ef_file)
+        ef_path = join(dir_inter_out, frozen_ef_file)
         act_path = join(base_dir_act, activity_file)
         
         # Read emission factor & activity files into DataFrames
@@ -283,7 +267,7 @@ def calc_emissions(dir_dict, em_species=None):
        
         f_name = '{}_total_CEDS_emissions.csv'.format(species)
         
-        f_out = join(out_path_ems, f_name)
+        f_out = join(dir_inter_out, f_name)
         
         info_str = 'Writing emissions DataFrame to {}'.format(f_out)
         logger.info(info_str)
@@ -311,11 +295,23 @@ def main():
     ef_files = ["H.SO2_total_EFs_extended.csv"]
     species = ["SO2"]
     
+    """Dictionary holding the paths to the various dta directories
+    
+    Keys
+    ----
+    dir_inter_out : Path to the directory for the CEDS intermediate output 
+                    files that this script produces.
+                    Contains:
+                       > *_total_CEDS_emissions.csv
+                       > H.*_total_EFs_extended.csv
+                       
+    dir_cmip6 : Path to the directory that holds the original, unmodified 
+                    CMIP6 emission factor (EF) files
+                      
+    """
     dir_dict = {
-                'dir_ef_actual': r"C:\Users\nich980\data\e-freeze\CMIP6-emissions\intermediate-output",
-                'dir_ef_freeze': r"C:\Users\nich980\data\e-freeze\frozen-emissions\em-factors",
-                'out_path_ems' : r"C:\Users\nich980\data\e-freeze\frozen-emissions\total-emissions",
-                'dir_activity' : r"C:\Users\nich980\data\e-freeze\CMIP6-emissions\intermediate-output"
+                'dir_cmip6': r"C:\Users\nich980\data\e-freeze\CMIP6-emissions\intermediate-output",
+                'dir_inter_out': r"C:\Users\nich980\data\e-freeze\python-output\intermediate-output"
                 }
     
     freeze_emissions(dir_dict, year) #, ef_files=ef_files)
