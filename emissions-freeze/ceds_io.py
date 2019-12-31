@@ -230,8 +230,8 @@ def get_sectors(df, comb_filter=True):
     sectors = df['sector'].unique().tolist()
     fuels = df['fuel'].unique().tolist()
     
-    logger.debug("len(sectors) = {}".format(len(sectors))
-    logger.debug("len(fuels) = {}".format(len(fuels))
+    logger.debug("len(sectors) = {}".format(len(sectors)))
+    logger.debug("len(fuels) = {}".format(len(fuels)))
     
     return (sectors, fuels)
     
