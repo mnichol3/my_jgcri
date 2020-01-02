@@ -395,12 +395,8 @@ def subset_yr_span(df, yr, yr_rng=5):
 
 def filter_data_sector(df):
     """
-    Filter the CEDS Emissions DataFrame to remove all emissions not related 
-    to combustion
-    
-    Apply a regular expression to the 'sector' field in each DataFrame row to
-    obtain a DataFrame containing only emission factor data pertaining to combustion
-    sectors
+    Filter the CEDS Emissions DataFrame to remove all emissions for sectors 
+    not related to combustion
     
     Parameters
     ----------
