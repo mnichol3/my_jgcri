@@ -29,7 +29,7 @@ Within RStudio, set the current working directory to the `CEDS_Data` directory, 
 ### Produce Frozen Emission Factor Files
   1. Run `code/my_jgcri/emissions-freeze/main.py` to produce frozen EF files and final emission files
 ### Produce Emission Summary Data
-  1. Copy and paste the frozen emission files from `/data/e-freeze/dat_out/frozen_emissions/` to `code/CEDS/intermediate-output` 
+  1. Copy and paste the frozen emission files from `data/e-freeze/python-output/intermediate-output` to `code/CEDS/intermediate-output` 
   2. Run `/code/my_jgcri/emissions-freeze/make_final_emissions.R`
 ### Compare Frozen Emissions to Normal Emissions
   1. Configure the `current_CEDS_version` and `previous_CEDS_version` in `CEDS_version_comparison.R` to match the frozen emission & normal emission versions
