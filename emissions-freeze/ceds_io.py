@@ -474,16 +474,6 @@ def reconstruct_ef_df(ef_df_actual, efsubset_obj, year_strs):
     
     logger.debug("Sector = {}; Fuel = {}".format(sector, fuel))
     
-    # for year_str in year_strs:
-        # for idx, iso in enumerate(efsubset_obj.isos):
-            #df.loc[df[<some_column_name>] == <condition>, [<another_column_name>]] = <value_to_add>
-            # logger.debug("iso = {}; EF = {}; year = {}".format(iso, efsubset_obj.ef_data[idx], year_str[1:]))
-            
-            # Locate the row of the CMIP6 EF DataFrame with the corresponding 
-            # iso, sector, & fuel values and overwrite its EF values
-            # ef_df_actual.loc[(ef_df_actual['iso'] == iso) & (ef_df_actual['sector'] == sector) &
-                             # (ef_df_actual['fuel'] == fuel), [year_str]] = efsubset_obj.ef_data[idx]
-                             
     for idx, iso in enumerate(efsubset_obj.isos):
         # df.loc[df[<some_column_name>] == <condition>, [<another_column_name>]] = <value_to_add>
         
@@ -544,13 +534,17 @@ def print_full_df(df):
     
     
 def main():
-    data_path = r"C:\Users\nich980\data\CEDS_CMIP6_Release_Archive\intermediate-output"
+    # data_path = r"C:\Users\nich980\data\CEDS_CMIP6_Release_Archive\intermediate-output"
     
-    gas = get_avail_species(data_path)
-    gs = get_species(data_path)
+    # gas = get_avail_species(data_path)
+    # gs = get_species(data_path)
     
-    print(gas)
-    print(gs)
+    # print(gas)
+    # print(gs)
+    
+    data_path = r"C:\Users\nich980\data\e-freeze\python-output\intermediate-output"
+    species = get_avail_species(data_path)
+    print(species)
     
     
 #    print(get_file_for_species(data_path, "BC", "activity"))
