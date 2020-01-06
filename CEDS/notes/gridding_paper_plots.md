@@ -28,7 +28,9 @@ The grid plotting scripts only accept grids with a nominal grid resolution of 0.
 
 ### 2.1 Check Grid Resolution
 
-To quickly check the gridded data resolution, use your favorite programming language or netCDF4 utility program (such as [NASA's Panoply](https://www.giss.nasa.gov/tools/panoply/) to view the file's `grid` attribute. For example, in Python 3.6:
+To quickly check the gridded data resolution, use your favorite programming language or netCDF4 utility program (such as [NASA's Panoply](https://www.giss.nasa.gov/tools/panoply/) to view the file's `grid` global attribute. 
+
+For example, using Python 3.6:
 ```python
 > from netCDF4 import Dataset
 > f_in = 'gridded-biomassburning_input4MIPs_file.nc'
@@ -36,7 +38,17 @@ To quickly check the gridded data resolution, use your favorite programming lang
 >  nc.getncattr('grid')
 '0.25x0.25 degree latitudexlongitude'
 ```
-In this example, the file's grid resolution is `0.25x0.25` degrees, so **must** be re-aggreagated on to a 0.5 x 0.5 degree grid before it can be passed to the plotting functions. However, if the file's `grid` resolution was `'0.5x0.5 degree latitudexlongitude'`, it could be passed to the plotting functions as-is (Sec 3).
+
+Or using R 3.6:
+```r
+> library(ncdf4)
+> nc_in <- 'gridded-biomassburning_input4MIPs_file.nc'
+> nc <- nc_open(nc_in)
+> ncatt_get(nc, varid=0, attname='grid')$value
+'0.25x0.25 degree latitudexlongitude'
+```
+
+In the above examples, the file's grid resolution is `0.25x0.25` degrees, so **must** be re-aggreagated on to a 0.5 x 0.5 degree grid before it can be passed to the plotting functions. However, if the file's `grid` resolution was `'0.5x0.5 degree latitudexlongitude'`, it could be passed to the plotting functions as-is (Sec 3).
 
 
 ### 2.2 Installing cdo on Windows 10
@@ -45,7 +57,7 @@ The easiest way to re-aggregate 0.25 deg gridded emissions data onto a 0.5 deg g
 
 Although cdo can by installed on Windows 10 by utilizing cygwin, the most easiest method of installation is by utilizing Windows 10's [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10). 
 
-After [enabling Windows Subsystem for Linux](https://www.onmsft.com/how-to/how-to-install-windows-10s-linux-subsystem-on-your-pc) and installing your distro of choice (I chose Ubuntu), installing cdo is simple. Open your Linux distro app and enter the following command in to the Linux command prompt:
+After [enabling Windows Subsystem for Linux](https://www.onmsft.com/how-to/how-to-install-windows-10s-linux-subsystem-on-your-pc) and installing your distro of choice (I chose Ubuntu), [installing cdo](https://github.com/koldunovn/nk_public_notebooks/blob/master/Install%20climate%20data%20operators%20(cdo)%20on%20Ubuntu%20with%20netCDF4%20and%20hdf5%20support.ipynb) is simple. Open your Linux distro app and enter the following command in to the Linux command prompt:
 ```
 sudo apt-get install cdo
 ```
