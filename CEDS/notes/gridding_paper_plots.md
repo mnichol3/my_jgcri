@@ -26,9 +26,22 @@ This document serves as a quick how-to for creating the CEDS gridded data plots 
 
 The grid plotting scripts only accept grids with a nominal grid resolution of 0.5 degrees (50 km, 720 lons x 360 lats). However, gridded historical openburning emissions files produced by Vrije Universiteit Amsterdam and obtained from the [ESGF website](https://esgf-node.llnl.gov/search/input4mips) have a nominal resolution of 0.25 degrees (25 km; 1440 lons x 720 lats). The plotting are unable to handle these grids, so the data must be re-aggregated to a 0.5 deg grid.
 
-The easiest way to re-aggregate 0.25 deg gridded emissions data onto a 0.5 deg grid is by utilizing the [Climate Data Operators (cdo) toolset](https://code.mpimet.mpg.de/projects/cdo). Hopefully you're using a Unix-based or Windows 10 system. If not, good luck.
+### 2.1 Check Grid Resolution
 
-### 2.1 Installing cdo on Windows 10
+To quickly check the gridded data resolution, use your favorite programming language or netCDF4 utility program (such as [NASA's Panoply](https://www.giss.nasa.gov/tools/panoply/) to view the file's `grid` attribute. For example, in Python 3.6:
+```python
+> from netCDF4 import Dataset
+> f_in = 'gridded-biomassburning_input4MIPs_file.nc'
+> nc = Dataset(f_in, 'r')
+>  nc.getncattr('grid')
+'0.25x0.25 degree latitudexlongitude'
+```
+In this example, the file's grid resolution is `0.25x0.25` degrees, so **must** be re-aggreagated on to a 0.5 x 0.5 degree grid before it can be passed to the plotting functions. However, if the file's `grid` resolution was `'0.5x0.5 degree latitudexlongitude'`, it could be passed to the plotting functions as-is (Sec 3).
+
+
+### 2.2 Installing cdo on Windows 10
+
+The easiest way to re-aggregate 0.25 deg gridded emissions data onto a 0.5 deg grid is by utilizing the [Climate Data Operators (cdo) toolset](https://code.mpimet.mpg.de/projects/cdo). Hopefully you're using a Unix-based or Windows 10 system. If not, good luck.
 
 Although cdo can by installed on Windows 10 by utilizing cygwin, the most easiest method of installation is by utilizing Windows 10's [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10). 
 
@@ -37,7 +50,7 @@ After [enabling Windows Subsystem for Linux](https://www.onmsft.com/how-to/how-t
 sudo apt-get install cdo
 ```
 
-### 2.2 Create a cdo grid description file
+### 2.3 Create a cdo grid description file
 
 Cdo is able to take a grid description file as an argument. This file defines the grid that the data will be re-aggregated on. If no grid description is given, or if a simple `720x360` description is given, the data will be re-aggregated onto a grid with longitude values the span `[0, 359.5]`. Since the plotting scripts expect longitude values of `[-179.75, 179.75]`, the resulting plots will be incorrect.
 
@@ -52,11 +65,34 @@ yfirst = -89.75
 yinc = 0.5
 ```
 
-### 2.3 Re-aggregate the gridded data
+### 2.4 Re-aggregate the gridded data
 Once you have cdo installed & the grid description file configures, re-aggregating the gridded data is simple, especially since we're going from a smaller grid to a larger one. We'll use the first-order conservative remapping function [`remapconn`](https://code.mpimet.mpg.de/projects/cdo/embedded/index.html#x1-6290002.12.5)
 
 In the Linux command prompt, enter the following command to re-aggregate the data from the file `biomassburning_input4MIPs.nc` and write it to a file of the same name:
 ```
 cdo -f nc4 remapcon,cdo-grid-in.txt biomassburning_input4MIPs.nc biomassburning_input4MIPs.nc
 ```
-   
+
+Since the files are rather large, it takes ~55 minutes to re-grid a single file. Because of this, its advantageous to write a script to re-grid multiple files and let it run overnight. The following bash script, `re-grid.sh`, accomplishes this:
+
+```bash
+#!/bin/sh
+
+DIR_INPUT=./openburning-gridded
+DIR_OUTPUT=./re-grid-new
+
+for f_in in ./openburning-gridded/*.nc; do
+    filename="${f_in##*/}"
+    f_out="${DIR_OUTPUT}/${filename}"
+    
+    echo "Processing $filename"
+    cdo -f nc4 remapcon,cdo-grid-in.txt "$f_in" "$f_out"
+done
+```
+
+The script iterates over every netCDF file found in the `./openburning-gridded` directory, passes it to the cdo `remapcon` function along with the `cdo-grid-in.txt` grid description file, the writes the resulting re-aggregated gridded data to the `./openburning-regridded` directory. It takes approximately 7 hours to process 8 gridded historical openburning emission files.
+
+*Note: The cdo command does not compress the resulting netCDF4 files. The average size of one of these files is around 1.95 GB* 
+
+
+## 3. Executing the Plotting Scripts
