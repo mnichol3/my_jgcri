@@ -51,9 +51,9 @@ Or using R 3.6:
 In the above examples, the file's grid resolution is `0.25x0.25` degrees, so the gridded emissions **must** be re-aggreagated on to a 0.5 x 0.5 degree grid before the file can be passed to the plotting functions. However, if the file's `grid` resolution was `'0.5x0.5 degree latitudexlongitude'`, it could be passed to the plotting functions as-is (Sec 3).
 
 
-### 2.2 Installing cdo on Windows 10
+### 2.2 Installing CDO on Windows 10
 
-The easiest way to re-aggregate 0.25 deg gridded emissions data onto a 0.5 deg grid is by utilizing the [Climate Data Operators (cdo) toolset](https://code.mpimet.mpg.de/projects/cdo). Hopefully you're using a Unix-based or Windows 10 system. If not, good luck.
+The easiest way to re-aggregate 0.25 deg gridded emissions data onto a 0.5 deg grid is by utilizing the [Climate Data Operators (CDO) toolset](https://code.mpimet.mpg.de/projects/cdo). Hopefully you're using a Unix-based or Windows 10 system. If not, good luck.
 
 Although cdo can by installed on Windows 10 by utilizing cygwin, the most easiest method of installation is by utilizing Windows 10's [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10). 
 
@@ -64,9 +64,9 @@ sudo apt-get install cdo
 
 cdo netCDF & hdf5 support troubleshooting info can be found [here](https://github.com/koldunovn/nk_public_notebooks/blob/master/Install%20climate%20data%20operators%20(cdo)%20on%20Ubuntu%20with%20netCDF4%20and%20hdf5%20support.ipynb)
 
-### 2.3 Create a cdo grid description file
+### 2.3 Create a CDO grid description file
 
-Cdo is able to take a grid description file as an argument. This file defines the grid that the data will be re-aggregated on. If no grid description is given, or if a simple `720x360` description is given, the data will be re-aggregated onto a grid with longitude values the span `[0, 359.5]`. Since the plotting scripts expect longitude values of `[-179.75, 179.75]`, the resulting plots will be incorrect.
+CDO is able to take a grid description file as an argument. This file defines the grid that the data will be re-aggregated on. If no grid description is given, or if a simple `720x360` description is given, the data will be re-aggregated onto a grid with longitude values the span `[0, 359.5]`. Since the plotting scripts expect longitude values of `[-179.75, 179.75]`, the resulting plots will be incorrect.
 
 The following grid description file (`cdo-grid-in.txt`) gets cdo to re-aggregate the data on to the correct 0.5 degree grid:
 ```
@@ -80,7 +80,7 @@ yinc = 0.5
 ```
 
 ### 2.4 Re-aggregate the gridded data
-Once you have cdo installed & the grid description file configures, re-aggregating the gridded data is simple, especially since we're going from a smaller grid to a larger one. We'll use the first-order conservative remapping function [`remapconn`](https://code.mpimet.mpg.de/projects/cdo/embedded/index.html#x1-6290002.12.5)
+Once you have CDO installed & the grid description file configures, re-aggregating the gridded data is simple, especially since we're going from a smaller grid to a larger one. We'll use the first-order conservative remapping function [`remapconn`](https://code.mpimet.mpg.de/projects/cdo/embedded/index.html#x1-6290002.12.5)
 
 In the Linux command prompt, enter the following command to re-aggregate the data from the file `biomassburning_input4MIPs.nc` and write it to a file of the same name:
 ```
