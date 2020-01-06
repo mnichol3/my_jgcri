@@ -31,16 +31,16 @@ The grid plotting scripts only accept grids with a nominal grid resolution of 0.
 To quickly check the gridded data resolution, use your favorite programming language or netCDF4 utility program (such as [NASA's Panoply](https://www.giss.nasa.gov/tools/panoply/)) to view the file's `grid` global attribute. 
 
 For example, using Python 3.6:
-```python
+```
 > from netCDF4 import Dataset
 > f_in = 'gridded-biomassburning_input4MIPs_file.nc'
 > nc = Dataset(f_in, 'r')
->  nc.getncattr('grid')
+> nc.getncattr('grid')
 '0.25x0.25 degree latitudexlongitude'
 ```
 
 Or using R 3.6:
-```r
+```
 > library(ncdf4)
 > nc_in <- 'gridded-biomassburning_input4MIPs_file.nc'
 > nc <- nc_open(nc_in)
