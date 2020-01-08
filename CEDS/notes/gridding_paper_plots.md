@@ -22,7 +22,7 @@ This document serves as a quick how-to for creating the CEDS gridded data plots 
      ```
      
      
-## 2. Re-aggregate the Gridded Data
+## 2. Validating the Gridded Data
 
 The grid plotting scripts only accept grids with a nominal grid resolution of 0.5 degrees (50 km, 720 lons x 360 lats). However, gridded historical openburning emissions files produced by Vrije Universiteit Amsterdam and obtained from the [ESGF website](https://esgf-node.llnl.gov/search/input4mips) have a nominal resolution of 0.25 degrees (25 km; 1440 lons x 720 lats). The plotting are unable to handle these grids, so the data must be re-aggregated to a 0.5 deg grid. 
 
@@ -30,7 +30,7 @@ The grid plotting scripts only accept grids with a nominal grid resolution of 0.
 
 To quickly check the gridded data resolution, use your favorite programming language or netCDF4 utility program (such as [NASA's Panoply](https://www.giss.nasa.gov/tools/panoply/)) to view the file's `grid` global attribute. 
 
-For example, using Python 3.6:
+Python 3.6:
 ```
 > from netCDF4 import Dataset
 > f_in = 'gridded-biomassburning_input4MIPs_file.nc'
@@ -39,7 +39,7 @@ For example, using Python 3.6:
 '0.25x0.25 degree latitudexlongitude'
 ```
 
-Or using R 3.6:
+R 3.6:
 ```
 > library(ncdf4)
 > nc_in <- 'gridded-biomassburning_input4MIPs_file.nc'
@@ -48,12 +48,12 @@ Or using R 3.6:
 '0.25x0.25 degree latitudexlongitude'
 ```
 
-In the above examples, the file's grid resolution is `0.25x0.25` degrees, so the gridded emissions **must** be re-aggreagated on to a 0.5 x 0.5 degree grid before the file can be passed to the plotting functions. However, if the file's `grid` resolution was `'0.5x0.5 degree latitudexlongitude'`, it could be passed to the plotting functions as-is (Sec 3).
+In the above examples, the file's grid resolution is `0.25x0.25` degrees, so the gridded emissions **must** be re-aggreagated on to a 0.5 x 0.5 degree grid before the file can be passed to the plotting functions. However, if the file's `grid` resolution value was `'0.5x0.5 degree latitudexlongitude'`, it could be passed to the plotting functions as-is (Sec 3).
 
 
 ### 2.2 Installing CDO on Windows 10
 
-The easiest way to re-aggregate 0.25 deg gridded emissions data onto a 0.5 deg grid is by utilizing the [Climate Data Operators (CDO) toolset](https://code.mpimet.mpg.de/projects/cdo). Hopefully you're using a Unix-based or Windows 10 system. If not, good luck.
+The easiest way to re-aggregate 0.25 deg gridded emissions data onto a 0.5 deg grid is by utilizing the [Climate Data Operators (CDO) toolset](https://code.mpimet.mpg.de/projects/cdo). Hopefully you're using a Unix-based or Windows 10 system.
 
 Although cdo can by installed on Windows 10 by utilizing cygwin, the most easiest method of installation is by utilizing Windows 10's [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10). 
 
@@ -62,7 +62,7 @@ After [enabling Windows Subsystem for Linux](https://www.onmsft.com/how-to/how-t
 sudo apt-get install cdo
 ```
 
-cdo netCDF & hdf5 support troubleshooting info can be found [here](https://github.com/koldunovn/nk_public_notebooks/blob/master/Install%20climate%20data%20operators%20(cdo)%20on%20Ubuntu%20with%20netCDF4%20and%20hdf5%20support.ipynb)
+CDO netCDF & hdf5 support troubleshooting info can be found [here](https://github.com/koldunovn/nk_public_notebooks/blob/master/Install%20climate%20data%20operators%20(cdo)%20on%20Ubuntu%20with%20netCDF4%20and%20hdf5%20support.ipynb)
 
 ### 2.3 Create a CDO grid description file
 
@@ -108,7 +108,7 @@ The script iterates over every netCDF file found in the `./openburning-gridded` 
 
 After re-aggregating the data on to the proper grid, copy & paste them into the proper `emission-archives/CEDS_grids/...` directory. For the historical openburning files metioned previously in this section, they belong in `emission-archives/CEDS_grids/historical-emissions`.
 
-*Note: The cdo command does not compress the resulting netCDF4 files. The average size of one of these files is around 1.95 GB* 
+*Note: The `cdo` command above does not compress the resulting netCDF4 files. The average size of one of these files is around 1.95 GB* 
 
 
 ## 3. Executing the Plotting Scripts
