@@ -87,11 +87,9 @@ In the Linux command prompt, enter the following command to re-aggregate the dat
 cdo -f nc4 remapcon,cdo-grid-in.txt biomassburning_input4MIPs.nc biomassburning_input4MIPs.nc
 ```
 
-Since the files are rather large, it takes ~55 minutes to re-grid a single file. Because of this, its advantageous to write a script to re-grid multiple files and let it run overnight. The following bash script, `re-grid.sh`, accomplishes this:
+Since the files are rather large, it takes ~55 minutes to re-grid a single file. Because of this, its advantageous to write a script to re-grid multiple files and let it run overnight. The following script, `re-grid.sh`, accomplishes this:
 
 ```bash
-#!/bin/sh
-
 DIR_INPUT=./openburning-gridded
 DIR_OUTPUT=./re-grid-new
 
