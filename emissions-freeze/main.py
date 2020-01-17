@@ -187,7 +187,7 @@ def calc_emissions(dir_dict, em_species=None):
     if (not em_species):
         em_species = ceds_io.get_avail_species(dir_inter_out)
     
-    logger.info('Emission species found: {}\n{}'.format(len(em_species)))
+    logger.info('Emission species found: {}\n'.format(len(em_species)))
     
     # Create list of strings representing year column headers
     data_col_headers = ['X{}'.format(i) for i in range(1750, 2015)]
