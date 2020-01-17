@@ -1,4 +1,6 @@
 # hector output files
+# We'll track hector input files to version control the vars for fetchvars_all
 output/
 
-# We'll track hector input files to version control the vars for fetchvars_all
+# Various output .csv files
+scripts/**/*.csv
