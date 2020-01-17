@@ -1,2 +1,4 @@
 # hector output files
 output/
+
+# We'll track hector input files to version control the vars for fetchvars_all
