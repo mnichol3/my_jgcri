@@ -29,11 +29,6 @@ log_name = 'update_rf.log'
 # Name of the calculated radiative forcing output file
 df_outpath = 'updated_rf.csv'
 
-# Initial concentrations obtained from Hector rcp 4.5 ini file
-c_0 = 588.071	# Pg C in CO2, from Murakami et al. (2010); C0=276, another way to specify, in ppmv
-m_0 = 653       # 721.8941 preindustrial methane, ppbv ; assumed to be 700 ppbv IPCC, 2001 Table 6.1
-n_0 = 272.9596  # preindustrial nitrous oxide, ppbv
-
 year_start = 1745
 year_end = 2300
 rf_baseyear = 1750  # When to start reporting; by definition, all F=0 in this year
@@ -321,7 +316,19 @@ def main():
                'rf_n2o': [None] * yr_span
                }
     
-    # Log constants and such
+    nominal_df = read_nominal_output(nominal_output)
+    log.debug('Finished reading nominal hector output. DataFrame shape: {}'.format(nominal_df.shape))
+    
+    nominal_c = get_nominal_conc(nominal_df, 'co2')     # co2 concentration
+    nominal_m = get_nominal_conc(nominal_df, 'ch4')     # ch4 concentration
+    nominal_n = get_nominal_conc(nominal_df, 'n2o')     # n2o concentration
+    
+    # Obtain the initial concentrations for t=0 timestep
+    c_0 = nominal_c.loc[nominal_c['year'] == year_start].value.iloc[0]
+    m_0 = nominal_m.loc[nominal_m['year'] == year_start].value.iloc[0]
+    n_0 = nominal_n.loc[nominal_n['year'] == year_start].value.iloc[0]
+    
+     # Log constants and such
     log.debug('nominal hector output path: {}'.format(nominal_output))
     log.debug('c_0 = {}'.format(c_0))
     log.debug('m_0 = {}'.format(m_0))
@@ -329,14 +336,6 @@ def main():
     log.debug('year_start = {}'.format(year_start))
     log.debug('year_end = {}'.format(year_end))
     log.debug('Initialized rf_dict value lists to length {}'.format(len(rf_dict['year'])))
-    
-    nominal_df = read_nominal_output(nominal_output)
-    log.debug('Finished reading nominal hector output. DataFrame shape: {}'.format(nominal_df.shape))
-    
-    nominal_c = get_nominal_conc(nominal_df, 'co2')     # co2 concentration
-    nominal_m = get_nominal_conc(nominal_df, 'ch4')     # ch4 concentration
-    nominal_n = get_nominal_conc(nominal_df, 'n2o')     # n2o concentration
-    log.debug('Finished subsetting nominal co2, ch4, & n2o concentrations')
     
     idx = 0
     # Max year = year_end + 1 due to how range() handles upper bounds
@@ -346,9 +345,9 @@ def main():
         print(info_str)
         
         # Get the nominal concentrations for the current year
-        c_curr = nominal_c.loc[nominal_c['year'] == year].value
-        m_curr = nominal_m.loc[nominal_m['year'] == year].value
-        n_curr = nominal_n.loc[nominal_n['year'] == year].value
+        c_curr = nominal_c.loc[nominal_c['year'] == year].value.iloc[0]
+        m_curr = nominal_m.loc[nominal_m['year'] == year].value.iloc[0]
+        n_curr = nominal_n.loc[nominal_n['year'] == year].value.iloc[0]
         
         log.debug('Concentration co2 = {}'.format(c_curr))
         log.debug('Concentration ch4 = {}'.format(m_curr))
@@ -358,6 +357,10 @@ def main():
         c_bar = calc_cbar(c_0, c_curr)
         m_bar = calc_mbar(m_0, m_curr)
         n_bar = calc_nbar(n_0, n_curr)
+        
+        log.debug('c_bar = {}'.format(c_bar))
+        log.debug('m_bar = {}'.format(m_bar))
+        log.debug('n_bar = {}'.format(n_bar))
         
         # Calculate the radiative forcings for the current year
         rf_c = calc_rf_co2(c_0, c_curr, n_bar)                  # co2 RF
@@ -374,6 +377,8 @@ def main():
         rf_dict['rf_co2'][idx] = rf_c     # co2 RF
         rf_dict['rf_ch4'][idx] = rf_m     # ch4 RF
         rf_dict['rf_n2o'][idx] = rf_n     # n2o RF
+        
+        idx += 1
         
         log.info('Finished calculating RF for year {}\n'.format(year))
         
