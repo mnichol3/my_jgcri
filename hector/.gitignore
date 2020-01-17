@@ -4,3 +4,6 @@ output/
 
 # Various output .csv files
 scripts/**/*.csv
+
+# All png's
+*.png
