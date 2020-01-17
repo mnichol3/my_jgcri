@@ -346,9 +346,9 @@ def main():
         print(info_str)
         
         # Get the nominal concentrations for the current year
-        c_curr = nominal_c.loc[nominal_c['year'] == year].value
-        m_curr = nominal_m.loc[nominal_m['year'] == year].value
-        n_curr = nominal_n.loc[nominal_n['year'] == year].value
+        c_curr = nominal_c.loc[nominal_c['year'] == year].value.iloc[0]
+        m_curr = nominal_m.loc[nominal_m['year'] == year].value.iloc[0]
+        n_curr = nominal_n.loc[nominal_n['year'] == year].value.iloc[0]
         
         log.debug('Concentration co2 = {}'.format(c_curr))
         log.debug('Concentration ch4 = {}'.format(m_curr))
@@ -374,6 +374,8 @@ def main():
         rf_dict['rf_co2'][idx] = rf_c     # co2 RF
         rf_dict['rf_ch4'][idx] = rf_m     # ch4 RF
         rf_dict['rf_n2o'][idx] = rf_n     # n2o RF
+        
+        idx += 1
         
         log.info('Finished calculating RF for year {}\n'.format(year))
         
