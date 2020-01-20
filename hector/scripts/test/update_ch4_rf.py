@@ -16,7 +16,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-from os.path import join, isdir, isfile
+from os.path import abspath, join, isdir, isfile
 from os import mkdir, getcwd, listdir, remove
 
 #--------------------------- Constant Definitions -----------------------------#
@@ -28,7 +28,7 @@ nominal_output = r'C:\Users\nich980\data\hector\output\nominal_run.csv'
 log_name = 'update_rf.log'
 
 # Name of the calculated radiative forcing output file
-df_outpath = 'updated_rf.csv'
+df_outpath = '../../output/updated_rf.csv'
 
 year_start = 1745
 year_end = 2300
@@ -388,6 +388,7 @@ def main():
     log.info('Constructing final DataFrame from rf_dict')
     rf_df = pd.DataFrame.from_dict(rf_dict, orient='columns')
     
+    abs_outpath = abspath(df_outpath).replace('\\', '/')
     info_str = 'Writing final DataFrame to {}'.format(df_outpath)
     log.info(info_str)
     print(info_str)
