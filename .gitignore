@@ -1,3 +1,7 @@
+# pycache files & dirs
+*.pyc
+/**/__pycache__
+
 # Log directories & files
 /**/logs/
 
