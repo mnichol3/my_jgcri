@@ -5,11 +5,12 @@ Author: Matt Nicholson
 This script contains equations for calculating co2, ch4, & n2o radiative forcing
 obtained from Etminan et al., 2016
 
-Full citation:
+References
+-----------
 Etminan, M., Myhre, G., Highwood, E. J., and Shine, K. P. ( 2016),
-Radiative forcing of carbon dioxide, methane, and nitrous oxide:
-A significant revision of the methane radiative forcing,
-Geophys. Res. Lett., 43, 12,614– 12,623, doi:10.1002/2016GL071930.
+    Radiative forcing of carbon dioxide, methane, and nitrous oxide:
+    A significant revision of the methane radiative forcing,
+    Geophys. Res. Lett., 43, 12,614– 12,623, doi:10.1002/2016GL071930.
 """
 import logging
 import numpy as np
