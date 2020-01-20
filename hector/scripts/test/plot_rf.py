@@ -9,7 +9,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 path_nominal_rf = r'C:\Users\nich980\data\hector\output\nominal_run.csv'
-path_updated_rf = 'updated_rf.csv'
+path_updated_rf = '../../output/updated_rf.csv'
 
 #----------------------- Read the updated hector output -----------------------#
 
