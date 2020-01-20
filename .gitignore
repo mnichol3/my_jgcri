@@ -1,3 +1,7 @@
+# Those pesky pycache files
+/**/__pycache__
+*.pyc
+
 # Log directories & files
 /**/logs/
 
