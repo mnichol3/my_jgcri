@@ -28,7 +28,7 @@ nominal_output = r'C:\Users\nich980\data\hector\output\nominal_run.csv'
 log_name = 'update_rf.log'
 
 # Name of the calculated radiative forcing output file
-df_outpath = '../../output/updated_rf.csv'
+df_outpath = 'output/updated_rf.csv'
 
 year_start = 1745
 year_end = 2300
