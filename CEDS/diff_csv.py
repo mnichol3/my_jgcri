@@ -8,9 +8,6 @@ Usage
 ------
 
 > python diff_csv.py /path/to/first.csv /path/to/second.csv
-
-> python diff_csv.py C:\Users\nich980\data\CEDS\CEDS-uncertainty\output\fullEmissions-BC-Pshift-ACTUAL.csv
-  C:\Users\nich980\code\CEDS-dev\input\fullEmissions-BC-Pshift.csv
 """
 import argparse
 import pandas as pd
