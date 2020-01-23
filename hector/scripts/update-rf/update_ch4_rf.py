@@ -13,6 +13,7 @@ Etminan, M., Myhre, G., Highwood, E. J., and Shine, K. P. ( 2016),
     Geophys. Res. Lett., 43, 12,614– 12,623, doi:10.1002/2016GL071930.
 """
 import logging
+import sys
 import numpy as np
 import pandas as pd
 
@@ -117,9 +118,106 @@ def calc_rf_co2(c_0, c_curr, n_bar):
     
     rf_co2 = ( (a * (c_curr - c_0)**2 ) + ( b * np.fabs(c_curr - c_0) ) + (c * n_bar) + 5.36 ) * ( np.log(c_curr / c_0) )
     return rf_co2
-
-
+    
+    
+ def calc_all_rf(emissions, year_start, year_end):
+    """
+    Calculate the radiative forcings for co2, ch4, & n2o for the timespan
+    defined by [year_start, year_end]
+    
+    Parameters
+    -----------
+    emissions : Pandas DataFrame
+        Emissions to use in the radiative forcing calculation
+    year_start : int
+        Start year
+    year_end : int
+        End year
+        
+    Return
+    -------
+    Pandas DataFrame containing radiative forcings
+        Columns: ['year', 'rf_co2', 'rf_ch4', 'rf_n2o']
+    """
+    prog_str = 'Year = {}'
+    yr_span = (year_end - year_start) + 1  # +1 since the span is inclusive
+    
+    # initialize dict val lists to their final size 
+    rf_dict = {'year': [None] * yr_span,
+               'rf_co2': [None] * yr_span,
+               'rf_ch4': [None] * yr_span,
+               'rf_n2o': [None] * yr_span
+               }
+               
+    # Check the formatting of the emissions dataframe
+    validate_em_vars(emissions)
+    
+    # Get a dataframe for each of the three emission species
+    em_c = emissions.loc[emissions['variable'] == 'Ca']     # CO2
+    em_m = emissions.loc[emissions['variable'] == 'CH4']    # CH4
+    em_n = emissions.loc[emissions['variable'] == 'N2O']    # CH4
+    
+    # Set the initial concentration values
+    c_0 = em_c.loc[em_c['year'] == year_start].value.iloc[0]    # CO2_0
+    m_0 = em_m.loc[em_m['year'] == year_start].value.iloc[0]    # CH4_0
+    n_0 = em_n.loc[em_n['year'] == year_start].value.iloc[0]    # N2O_0
+    
+    # Set upper bound to year_end + 1 due to how range() handles upper bounds
+    for idx, year in enumerate(range(year_start, year_end + 1)):
+        print(prog_str.format(year))
+        
+        # Get the nominal concentrations for the current year
+        c_curr = em_c.loc[nominal_c['year'] == year].value.iloc[0]
+        m_curr = em_m.loc[nominal_m['year'] == year].value.iloc[0]
+        n_curr = em_n.loc[nominal_n['year'] == year].value.iloc[0]
+        
+        # Calculate the averaged concentrations
+        c_bar = calc_cbar(c_0, c_curr)
+        m_bar = calc_mbar(m_0, m_curr)
+        n_bar = calc_nbar(n_0, n_curr)
+        
+        # Calculate the radiative forcings for the current year
+        rf_c = calc_rf_co2(c_0, c_curr, n_bar)                  # co2 RF
+        rf_m = calc_rf_ch4(m_0, m_curr, m_bar, n_bar)           # ch4 RF
+        rf_n = calc_rf_n2o(n_0, n_curr, c_bar, n_bar, m_bar)    # n2o RF
+        
+        rf_dict['year'][idx] = year
+        rf_dict['rf_co2'][idx] = rf_c     # co2 RF
+        rf_dict['rf_ch4'][idx] = rf_m     # ch4 RF
+        rf_dict['rf_n2o'][idx] = rf_n     # n2o RF
+    
+    print('Constructing final DataFrame...'
+    rf_df = pd.DataFrame.from_dict(rf_dict, orient='columns')
+    
+    return rf_df
+    
+    
 #----------------------------- Helper Functions -------------------------------#
+def validate_em_vars(emissions):
+"""
+Helper function for calc_all_rf
+
+Check that the following variables are present in the 'variable' column
+of the emission dataframe: CH4, Ca (CO2), N2O. Raises an assertion error if one
+of those variables is not found in the list of unique emission variables
+
+Parameters
+-----------
+emissions : Pandas DataFrame
+    Emissions used to calculate the radiative forcings
+    
+Return
+-------
+None
+"""
+vars = ['CH4', 'Ca', 'N2O']
+assert_str = "Var {} not found in emission variables"
+
+em_vars = emissions['variable'].unique().tolist()
+
+for var in vars:
+    assert var in em_vars, assert_str.format(var)
+
 
 def calc_nbar(n_0, n_curr):
     """
@@ -298,6 +396,7 @@ def setup_logger(log_name):
     
     return logger
     
+    
 #=========================== End Helper Functions =============================#
 
 def main():
@@ -339,11 +438,12 @@ def main():
     log.debug('Initialized rf_dict value lists to length {}'.format(len(rf_dict['year'])))
     
     idx = 0
+    msg_str = 'Year = {}'
     # Max year = year_end + 1 due to how range() handles upper bounds
-    for year in range(year_start, year_end + 1):
-        info_str = 'Year = {}'.format(year)
-        log.info(info_str)
-        print(info_str)
+    for year in range(year_start, year_end + 1):    # Could change to 'idx, year in enumerate()...'
+        msg = msg_str.format(year)
+        log.info(msg)
+        print(msg)
         
         # Get the nominal concentrations for the current year
         c_curr = nominal_c.loc[nominal_c['year'] == year].value.iloc[0]
