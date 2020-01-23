@@ -120,7 +120,7 @@ def calc_rf_co2(c_0, c_curr, n_bar):
     return rf_co2
     
     
- def calc_all_rf(emissions, year_start, year_end):
+def calc_all_rf(emissions, year_start, year_end):
     """
     Calculate the radiative forcings for co2, ch4, & n2o for the timespan
     defined by [year_start, year_end]
@@ -139,7 +139,6 @@ def calc_rf_co2(c_0, c_curr, n_bar):
     Pandas DataFrame containing radiative forcings
         Columns: ['year', 'rf_co2', 'rf_ch4', 'rf_n2o']
     """
-    prog_str = 'Year = {}'
     yr_span = (year_end - year_start) + 1  # +1 since the span is inclusive
     
     # initialize dict val lists to their final size 
@@ -162,14 +161,15 @@ def calc_rf_co2(c_0, c_curr, n_bar):
     m_0 = em_m.loc[em_m['year'] == year_start].value.iloc[0]    # CH4_0
     n_0 = em_n.loc[em_n['year'] == year_start].value.iloc[0]    # N2O_0
     
+    print('Calculating updated RFs for CO2, CH4, & N2O...')
+    
     # Set upper bound to year_end + 1 due to how range() handles upper bounds
     for idx, year in enumerate(range(year_start, year_end + 1)):
-        print(prog_str.format(year))
         
         # Get the nominal concentrations for the current year
-        c_curr = em_c.loc[nominal_c['year'] == year].value.iloc[0]
-        m_curr = em_m.loc[nominal_m['year'] == year].value.iloc[0]
-        n_curr = em_n.loc[nominal_n['year'] == year].value.iloc[0]
+        c_curr = em_c.loc[em_c['year'] == year].value.iloc[0]
+        m_curr = em_m.loc[em_m['year'] == year].value.iloc[0]
+        n_curr = em_n.loc[em_n['year'] == year].value.iloc[0]
         
         # Calculate the averaged concentrations
         c_bar = calc_cbar(c_0, c_curr)
@@ -186,7 +186,7 @@ def calc_rf_co2(c_0, c_curr, n_bar):
         rf_dict['rf_ch4'][idx] = rf_m     # ch4 RF
         rf_dict['rf_n2o'][idx] = rf_n     # n2o RF
     
-    print('Constructing final DataFrame...'
+    print('Constructing RF DataFrame...\n')
     rf_df = pd.DataFrame.from_dict(rf_dict, orient='columns')
     
     return rf_df
@@ -194,29 +194,46 @@ def calc_rf_co2(c_0, c_curr, n_bar):
     
 #----------------------------- Helper Functions -------------------------------#
 def validate_em_vars(emissions):
-"""
-Helper function for calc_all_rf
+    """
+    Helper function for calc_all_rf
 
-Check that the following variables are present in the 'variable' column
-of the emission dataframe: CH4, Ca (CO2), N2O. Raises an assertion error if one
-of those variables is not found in the list of unique emission variables
+    Check that the following variables are present in the 'variable' column
+    of the emission dataframe: CH4, Ca (CO2), N2O. Raises an assertion error if one
+    of those variables is not found in the list of unique emission variables
 
-Parameters
------------
-emissions : Pandas DataFrame
-    Emissions used to calculate the radiative forcings
+    Parameters
+    -----------
+    emissions : Pandas DataFrame
+        Emissions used to calculate the radiative forcings
+        
+    Return
+    -------
+    None
+    """
+    vars = ['CH4', 'Ca', 'N2O']
+    assert_str = "Var {} not found in emission variables"
+
+    em_vars = emissions['variable'].unique().tolist()
+
+    for var in vars:
+        assert var in em_vars, assert_str.format(var)
     
-Return
--------
-None
-"""
-vars = ['CH4', 'Ca', 'N2O']
-assert_str = "Var {} not found in emission variables"
-
-em_vars = emissions['variable'].unique().tolist()
-
-for var in vars:
-    assert var in em_vars, assert_str.format(var)
+    
+def within_range(year_start, year_end, year_x):
+    """
+    Check if year_x is within the time span defined by [year_start, year_end]
+    
+    Parameters
+    -----------
+    year_start : int
+    year_end : int
+    year_x : int
+    
+    Return
+    -------
+    Boolean
+    """
+    return ((year_x >= year_start) and (year_end >= year_x))
 
 
 def calc_nbar(n_0, n_curr):
