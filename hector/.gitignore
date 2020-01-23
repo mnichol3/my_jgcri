@@ -7,3 +7,6 @@ scripts/**/*.csv
 
 # All png's
 *.png
+
+# Input for updated radiative forcing equation tests
+scripts/update-rf/input/

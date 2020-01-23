@@ -27,7 +27,7 @@ import update_ch4_rf as updated_rf
 
 # File containing the mixing ratios and calculated RF for co2, ch4, & n20 from
 # Etminan et al. 2016's supplemental information table S1
-rf_data = '../../input/etminan_vars.csv'
+rf_data = 'input/etminan_vars.csv'
 rf_actual = pd.read_csv(rf_data, sep=',', header=0)
 
 # co2 mixing ratio values as list
