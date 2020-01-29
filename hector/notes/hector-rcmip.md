@@ -59,3 +59,34 @@ ERROR: compilation failed for package 'farver'
 This is due to the package's C++ backend using features that the default `gcc` complier on `pic` is unaware of due to it being an older version. 
 
 **Solution**: Load a newer version of the `gcc` compiler with `module load gcc/6.1.0` and execute the `renv` installation command again.
+
+
+### R package `rzmq` fails to compile on `pic`
+The automated `renv` package installation script may fail when attempting to compile the `rzmq` package on `pic` with an error message that looks something like this:
+```
+Installing rzmq [0.9.6] ...
+        FAILED
+Error installing package 'rzmq':
+================================
+
+* installing *source* package 'rzmq' ...
+** package 'rzmq' successfully unpacked and MD5 sums checked
+Package libzmq was not found in the pkg-config search path.
+Perhaps you should add the directory containing `libzmq.pc'
+to the PKG_CONFIG_PATH environment variable
+No package 'libzmq' found
+Using PKG_CFLAGS=
+Using PKG_LIBS=-lzmq
+------------------------- ANTICONF ERROR ---------------------------
+Configuration failed because libzmq was not found. Try installing:
+ * deb: libzmq3-dev (Debian, Ubuntu, etc)
+ * rpm: zeromq-devel (Fedora, CentOS 7)
+ * rpm: zeromq3-devel (RHEL 6, CentOS 6, from EPEL)
+ * csw: libzmq1_dev (Solaris)
+If libzmq is already installed, check that 'pkg-config' is in your
+PATH and PKG_CONFIG_PATH contains a libzmq.pc file. If pkg-config
+is unavailable you can set INCLUDE_DIR and LIB_DIR manually via:
+R CMD INSTALL --configure-vars='INCLUDE_DIR=... LIB_DIR=...'
+```
+
+**Solution**: Ask Alexey
