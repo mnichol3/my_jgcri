@@ -37,56 +37,56 @@ The Hector RCMIP Tier 1 analysis can be produced via `hector-rcmipscripts/tier-1
 
 ## Troubleshooting
 
-### Running in parallel on Windows
-The `hector-rcmip` scripts are designed to run in parallel. However, the package that implements parallelization relies on a forking mechanism that exists only on Unix-like systems (Linux, MAC, etc.). Thus, the scripts are unable to be run in parallel on Windows machines.
+* ### Running in parallel on Windows
+  The `hector-rcmip` scripts are designed to run in parallel. However, the package that implements parallelization relies on a forking mechanism that exists only on Unix-like systems (Linux, MAC, etc.). Thus, the scripts are unable to be run in parallel on Windows machines.
 
 
-### R package `farver` fails to compile on `pic`
-The automated `renv` package installation script may fail when attempting to compile the `farver` package on `pic` with an error message that looks something like this:
-```
-* installing *source* package 'farver' ...
-** package 'farver' successfully unpacked and MD5 sums checked
-** libs
-g++ -std=gnu++0x -I"/share/apps/R/3.5.1/lib64/R/include" -DNDEBUG   -I/usr/local/include   -fpic  -I/share/apps/R/3.5.1/include -c ColorSpace.cpp -o ColorSpace.o
-In file included from ColorSpace.cpp:1:
-ColorSpace.h:19: error: ISO C++ forbids initialization of member 'valid'
-ColorSpace.h:19: error: making 'valid' static
-ColorSpace.h:19: error: ISO C++ forbids in-class initialization of non-const static member 'valid'
-make: *** [ColorSpace.o] Error 1
-ERROR: compilation failed for package 'farver'
-```
+* ### R package `farver` fails to compile on `pic`
+  The automated `renv` package installation script may fail when attempting to compile the `farver` package on `pic` with an error message that looks something like this:
+  ```
+  * installing *source* package 'farver' ...
+  ** package 'farver' successfully unpacked and MD5 sums checked
+  ** libs
+  g++ -std=gnu++0x -I"/share/apps/R/3.5.1/lib64/R/include" -DNDEBUG   -I/usr/local/include   -fpic  -I/share/apps/R/3.5.1/include -c     ColorSpace.cpp -o ColorSpace.o
+  In file included from ColorSpace.cpp:1:
+  ColorSpace.h:19: error: ISO C++ forbids initialization of member 'valid'
+  ColorSpace.h:19: error: making 'valid' static
+  ColorSpace.h:19: error: ISO C++ forbids in-class initialization of non-const static member 'valid'
+  make: *** [ColorSpace.o] Error 1
+  ERROR: compilation failed for package 'farver'
+  ```
 
-This is due to the package's C++ backend using features that the default `gcc` complier on `pic` is unaware of due to it being an older version. 
+  This is due to the package's C++ backend using features that the default `gcc` complier on `pic` is unaware of due to it being an older version. 
 
-**Solution**: Load a newer version of the `gcc` compiler with `module load gcc/6.1.0` and execute the `renv` installation command again.
+  **Solution**: Load a newer version of the `gcc` compiler with `module load gcc/6.1.0` and execute the `renv` installation command again.
 
 
-### R package `rzmq` fails to compile on `pic`
-The automated `renv` package installation script may fail when attempting to compile the `rzmq` package on `pic` with an error message that looks something like this:
-```
-Installing rzmq [0.9.6] ...
-        FAILED
-Error installing package 'rzmq':
-================================
+* ### R package `rzmq` fails to compile on `pic`
+  The automated `renv` package installation script may fail when attempting to compile the `rzmq` package on `pic` with an error message   that looks something like this:
+  ```
+  Installing rzmq [0.9.6] ...
+          FAILED
+  Error installing package 'rzmq':
+  ================================
+  
+  * installing *source* package 'rzmq' ...
+  ** package 'rzmq' successfully unpacked and MD5 sums checked
+  Package libzmq was not found in the pkg-config search path.
+  Perhaps you should add the directory containing `libzmq.pc'
+  to the PKG_CONFIG_PATH environment variable
+  No package 'libzmq' found
+  Using PKG_CFLAGS=
+  Using PKG_LIBS=-lzmq
+  ------------------------- ANTICONF ERROR ---------------------------
+  Configuration failed because libzmq was not found. Try installing:
+   * deb: libzmq3-dev (Debian, Ubuntu, etc)
+   * rpm: zeromq-devel (Fedora, CentOS 7)
+   * rpm: zeromq3-devel (RHEL 6, CentOS 6, from EPEL)
+   * csw: libzmq1_dev (Solaris)
+  If libzmq is already installed, check that 'pkg-config' is in your
+  PATH and PKG_CONFIG_PATH contains a libzmq.pc file. If pkg-config
+  is unavailable you can set INCLUDE_DIR and LIB_DIR manually via:
+  R CMD INSTALL --configure-vars='INCLUDE_DIR=... LIB_DIR=...'
+  ```
 
-* installing *source* package 'rzmq' ...
-** package 'rzmq' successfully unpacked and MD5 sums checked
-Package libzmq was not found in the pkg-config search path.
-Perhaps you should add the directory containing `libzmq.pc'
-to the PKG_CONFIG_PATH environment variable
-No package 'libzmq' found
-Using PKG_CFLAGS=
-Using PKG_LIBS=-lzmq
-------------------------- ANTICONF ERROR ---------------------------
-Configuration failed because libzmq was not found. Try installing:
- * deb: libzmq3-dev (Debian, Ubuntu, etc)
- * rpm: zeromq-devel (Fedora, CentOS 7)
- * rpm: zeromq3-devel (RHEL 6, CentOS 6, from EPEL)
- * csw: libzmq1_dev (Solaris)
-If libzmq is already installed, check that 'pkg-config' is in your
-PATH and PKG_CONFIG_PATH contains a libzmq.pc file. If pkg-config
-is unavailable you can set INCLUDE_DIR and LIB_DIR manually via:
-R CMD INSTALL --configure-vars='INCLUDE_DIR=... LIB_DIR=...'
-```
-
-**Solution**: Ask Alexey
+  **Solution**: Ask Alexey
