@@ -10,7 +10,7 @@
 
 ### 3. Compare output from current default Hector, Hector v2.3, Hector v2.01, and RCMIP
 
-### 4. Run current default Hector with defaul RCP emissions & RCMIP RCP emissions and compare
+### 4. Run current default Hector with default RCP emissions & RCMIP RCP emissions and compare
 * Determine if the problem lies within Hector's default RCP files
 
 ### 5. Plot differences amongst key emissions between Hector versions and input emissions 
