@@ -22,4 +22,13 @@ Once you have a local clone of the repo, `renv` will install all required depend
 * To install the packages from the command line:
   *  Navigate to the `hector-rcmip` directory and enter the command: `Rscript -e 'renv::restore()`
 
-The `renv` package *should* install itself if not already installed. If this fails, `renv` can be installed manually with `install.packages("renv")` 
+The `renv` package *should* install itself if not already installed. If this fails, `renv` can be installed manually with `install.packages("renv")`
+
+### Notes
+* The `hector-rcmip` scripts are designed to run in parallel. However, the package that implements parallelization relies on a forking mechanism that exists only on Unix-like systems. Thus, the scripts are unable to be run in parallel on Windows machines. 
+
+
+## Reproducing Tier 1 Analysis
+The Hector RCMIP Tier 1 analysis can be produced via `hector-rcmipscripts/tier-1-scenarios.R`
+* From Rstudio: `source("scripts/tier-1-scenarios.R")`
+* From command line: `Rscript scripts/tier-1-scenarios.R`
