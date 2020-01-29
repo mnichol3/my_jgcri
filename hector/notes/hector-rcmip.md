@@ -26,9 +26,6 @@ Once you have a local clone of the repo, `renv` will install all required depend
 
 The `renv` package *should* install itself if not already installed. If this fails, `renv` can be installed manually with `install.packages("renv")`
 
-### Notes
-* The `hector-rcmip` scripts are designed to run in parallel. However, the package that implements parallelization relies on a forking mechanism that exists only on Unix-like systems. Thus, the scripts are unable to be run in parallel on Windows machines. 
-
 <br>
 
 ## Reproducing Tier 1 Analysis
@@ -39,6 +36,10 @@ The Hector RCMIP Tier 1 analysis can be produced via `hector-rcmipscripts/tier-1
 <br>
 
 ## Troubleshooting
+
+### Running in parallel on Windows
+The `hector-rcmip` scripts are designed to run in parallel. However, the package that implements parallelization relies on a forking mechanism that exists only on Unix-like systems (Linux, MAC, etc.). Thus, the scripts are unable to be run in parallel on Windows machines.
+
 
 ### R package `farver` fails to compile on `pic`
 The automated `renv` package installation script may fail when attempting to compile the `farver` package on `pic` with an error message that looks something like this:
