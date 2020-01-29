@@ -7,6 +7,8 @@ The RCMIP provides a standard protocol for simple and reduced-complexity climate
 ### Scenarios
 The RCMIP experimental protocol is broken up into three tiers, with Tier 1 being the highest priority. Tier 1 scenarios focus on concentration and emissions driven scenarios as well as basic benchmarking tests. Tier 2 and 3 scenarios focus on further examining the behavior of the models. This document discusses how to set up and run scripts to produce Hector variables for submission for RCMIP Tier 1 scenarios.
 
+<br>
+
 ## Set-up and Installation
 The [`hector-rcmip` repository](https://github.com/ashiklom/hector-rcmip) contains functions and scripts that produce RCMIP output from Hector for submission to RCMIP. Included in the repository is an [renv](https://cran.r-project.org/web/packages/renv/index.html) directory that contains a script to install the dependencies needed to run the Hector RCMIP Tier 1 scenarios. 
 
@@ -27,12 +29,14 @@ The `renv` package *should* install itself if not already installed. If this fai
 ### Notes
 * The `hector-rcmip` scripts are designed to run in parallel. However, the package that implements parallelization relies on a forking mechanism that exists only on Unix-like systems. Thus, the scripts are unable to be run in parallel on Windows machines. 
 
+<br>
 
 ## Reproducing Tier 1 Analysis
 The Hector RCMIP Tier 1 analysis can be produced via `hector-rcmipscripts/tier-1-scenarios.R`
 * From Rstudio: `source("scripts/tier-1-scenarios.R")`
 * From command line: `Rscript scripts/tier-1-scenarios.R`
 
+<br>
 
 ## Troubleshooting
 
