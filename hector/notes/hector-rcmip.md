@@ -8,13 +8,18 @@ The RCMIP provides a standard protocol for simple and reduced-complexity climate
 The RCMIP experimental protocol is broken up into three tiers, with Tier 1 being the highest priority. Tier 1 scenarios focus on concentration and emissions driven scenarios as well as basic benchmarking tests. Tier 2 and 3 scenarios focus on further examining the behavior of the models. This document discusses how to set up and run scripts to produce Hector variables for submission for RCMIP Tier 1 scenarios.
 
 ## Set-up and Installation
-### 1. `hector-rcmip` 
 The [`hector-rcmip` repository](https://github.com/ashiklom/hector-rcmip) contains functions and scripts that produce RCMIP output from Hector for submission to RCMIP. Included in the repository is an [renv](https://cran.r-project.org/web/packages/renv/index.html) directory that contains a script to install the dependencies needed to run the Hector RCMIP Tier 1 scenarios. 
 
-#### Clone the `hector-rcmip` repository
+### 1. Clone the `hector-rcmip` repository
 The `hector-rcmip` repository can be cloned by entering the following command into the git command prompt:
 ```
 git clone https://github.com/ashiklom/hector-rcmip.git
 ```
 
-Once you have a local clone of the repo, 
+### 2. Install dependencies with `renv`
+Once you have a local clone of the repo, `renv` will install all required dependencies. 
+* To install the packages from Rstudio: `renv::restore()`
+* To install the packages from the command line:
+  *  Navigate to the `hector-rcmip` directory and enter the command: `Rscript -e 'renv::restore()`
+
+The `renv` package *should* install itself if not already installed. If this fails, `renv` can be installed manually with `install.packages("renv")` 
