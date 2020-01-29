@@ -32,3 +32,25 @@ The `renv` package *should* install itself if not already installed. If this fai
 The Hector RCMIP Tier 1 analysis can be produced via `hector-rcmipscripts/tier-1-scenarios.R`
 * From Rstudio: `source("scripts/tier-1-scenarios.R")`
 * From command line: `Rscript scripts/tier-1-scenarios.R`
+
+
+## Troubleshooting
+
+### R package `farver` fails to compile on `pic`
+The automated `renv` package installation script may fail when attempting to compile the `farver` package on `pic` with an error message that looks something like this:
+```
+* installing *source* package 'farver' ...
+** package 'farver' successfully unpacked and MD5 sums checked
+** libs
+g++ -std=gnu++0x -I"/share/apps/R/3.5.1/lib64/R/include" -DNDEBUG   -I/usr/local/include   -fpic  -I/share/apps/R/3.5.1/include -c ColorSpace.cpp -o ColorSpace.o
+In file included from ColorSpace.cpp:1:
+ColorSpace.h:19: error: ISO C++ forbids initialization of member 'valid'
+ColorSpace.h:19: error: making 'valid' static
+ColorSpace.h:19: error: ISO C++ forbids in-class initialization of non-const static member 'valid'
+make: *** [ColorSpace.o] Error 1
+ERROR: compilation failed for package 'farver'
+```
+
+This is due to the package's C++ backend using features that the default `gcc` complier on `pic` is unaware of due to it being an older version. 
+
+**Solution**: Load a newer version of the `gcc` compiler with `module load gcc/6.1.0` and execute the `renv` installation command again.
