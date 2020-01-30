@@ -129,6 +129,6 @@ The Hector RCMIP Tier 1 analysis can be produced via `hector-rcmipscripts/tier-1
      use --configure-args='--with-udunits2-lib=/usr/local/lib'
   ...
   ```
-  The `udunits2` R package requires the `udunits2` library to already be installed. While it *is* installed on `pic` (`which udunits2` yield `/usr/bin/udunits2`), it appears that its `modulefile` is either misconfigured or absent entirely. 
+  The `udunits2` R package requires the `udunits2` library to already be installed. While it *is* installed on `pic` (`which udunits2` yield `/usr/bin/udunits2`), it appears that its `modulefile` is either misconfigured or absent entirely. Thus, `module load udunits2` will not solve the problem.
   
   **Solution**: Ask Alexey
