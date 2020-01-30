@@ -88,5 +88,11 @@ The Hector RCMIP Tier 1 analysis can be produced via `hector-rcmipscripts/tier-1
   is unavailable you can set INCLUDE_DIR and LIB_DIR manually via:
   R CMD INSTALL --configure-vars='INCLUDE_DIR=... LIB_DIR=...'
   ```
-
-  **Solution**: Ask Alexey
+  
+  The R package `rzmq` requires either the `libzmq` or `zeromq` library to be installed. The `zeromq` library is already installed on `pic` (as of 1-30-2020), however it is not properly configured as the error message suggests.
+  
+  **Solution**: Manually load the `zeromq` module and install the `rzmq` package with the following command:
+  ```
+  PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/share/apps/zeromq/4.1.4/lib/pkgconfig Rscript -e "install.packages('rzmq')"
+  ```
+  (Solution courtesy of [Alexey Shiklomanov](https://github.com/ashiklom))
