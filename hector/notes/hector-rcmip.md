@@ -43,6 +43,11 @@ Once you have a local clone of the repo, `renv` will install all required depend
 
 The `renv` package *should* install itself if not already installed. If this fails, `renv` can be installed manually with `install.packages("renv")`
 
+The following message indicates that `renv` has finished downloading and installing the required packages & dependencies:
+```
+* The library is already synchronized with the lockfile.
+```
+
 <br>
 
 ## Reproducing Tier 1 Analysis
