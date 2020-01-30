@@ -12,13 +12,30 @@ The RCMIP experimental protocol is broken up into three tiers, with Tier 1 being
 ## Set-up and Installation
 The [`hector-rcmip` repository](https://github.com/ashiklom/hector-rcmip) contains functions and scripts that produce RCMIP output from Hector for submission to RCMIP. Included in the repository is an [renv](https://cran.r-project.org/web/packages/renv/index.html) directory that contains a script to install the dependencies needed to run the Hector RCMIP Tier 1 scenarios. 
 
-### 1. Clone the `hector-rcmip` repository
+In order to take advantage of the `hector-rcmip` package's parallelization, its best to set it up to run on a HPC cluster. This section outlines how to go about installing the package and its dependencies on PNNL's HPC `pic`. 
+
+### 1. Load required modules
+It's easiest to load all the required modules we'll need to install the `hector-rcmip` on `pic` at the beginning. We'll need to load `git` to clone the repository, a compiler (`gcc`) to compile the installed R dependency packages, and a few other libraries. 
+
+After starting a new remote session on `pic`, enter the following commands to load the required modules: 
+```
+module load git
+module load R
+module load gcc/6.1.0
+```
+
+**Notes**
+* The default version of R on `pic` is v3.5.1 (as of 1-30-2020). Later on in the installation, `renv` may request R v3.6.2, but 3.5.1 will work fine.
+* The default `gcc` compiler on `pic` is a bit outdated. In order to install some R dependency packages, you'll need to explicitly load `gcc/6.1.0` (see [Troubleshooting subsection](#r-package-farver-fails-to-compile-on-pic) for details)
+
+
+### 2. Clone the `hector-rcmip` repository
 The `hector-rcmip` repository can be cloned by entering the following command into the git command prompt:
 ```
 git clone https://github.com/ashiklom/hector-rcmip.git
 ```
 
-### 2. Install dependencies with `renv`
+### 3. Install dependencies with `renv`
 Once you have a local clone of the repo, `renv` will install all required dependencies. 
 * To install the packages from Rstudio: `renv::restore()`
 * To install the packages from the command line:
