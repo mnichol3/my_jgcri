@@ -113,3 +113,22 @@ The Hector RCMIP Tier 1 analysis can be produced via `hector-rcmipscripts/tier-1
   PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/share/apps/zeromq/4.1.4/lib/pkgconfig Rscript -e "install.packages('rzmq')"
   ```
   (Solution courtesy of [Alexey Shiklomanov](https://github.com/ashiklom))
+  
+  
+* ### R package `udunits2` fails to install on `pic`
+  The automated `renv` package installation script may fail when attempting to compile the `udunits2` package on `pic` with an error message that looks something like this:
+  ```
+  Installing udunits2 [0.13] ...
+        FAILED
+  Error installing package 'udunits2':
+  .
+  .
+  .
+  -----Error: udunits2.h not found-----
+     If the udunits2 library is installed in a non-standard location,
+     use --configure-args='--with-udunits2-lib=/usr/local/lib'
+  ...
+  ```
+  The `udunits2` R package requires the `udunits2` library to already be installed. While it *is* installed on `pic` (`which udunits2` yield `/usr/bin/udunits2`), it appears that its `modulefile` is either misconfigured or absent entirely. 
+  
+  **Solution**: Ask Alexey
