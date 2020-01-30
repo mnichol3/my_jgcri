@@ -8,12 +8,10 @@ Usage
 ------
 
 > python diff_csv.py /path/to/first.csv /path/to/second.csv
-
-> python diff_csv.py C:\Users\nich980\data\CEDS\CEDS-uncertainty\output\fullEmissions-BC-Pshift-ACTUAL.csv
-  C:\Users\nich980\code\CEDS-dev\input\fullEmissions-BC-Pshift.csv
 """
 import argparse
 import pandas as pd
+from pathlib import Path
 from os.path import isfile, join
 
 # ==============================================================================
@@ -61,11 +59,12 @@ else:
 
 # Determine file paths & validate
 if (args.common_dir):
-    path_csv_1 = join(args.common_dir, args.csv_1)
-    path_csv_2 = join(args.common_dir, args.csv_2)
+    dir_cmn = Path(args.common_dir)
+    path_csv_1 = join(dir_cmn, args.csv_1)
+    path_csv_2 = join(dir_cmn, args.csv_2)
 else:
-    path_csv_1 = args.csv_1
-    path_csv_2 = args.csv_2
+    path_csv_1 = Path(args.csv_1)
+    path_csv_2 = Path(args.csv_2)
 
 validate_path(path_csv_1, path_csv_2)
 
