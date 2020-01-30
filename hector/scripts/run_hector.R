@@ -13,10 +13,7 @@ run(core)
 vars <- c(ATMOSPHERIC_CH4(), ATMOSPHERIC_CO2(), ATMOSPHERIC_N2O())
 
 # rslts <- fetchvars(core, 1745:2300, vars)
-rslt <- fetchvars(core, 2100:2150, vars)
-rslt
+rslt <- fetchvars_all(core, 2100:2150)
 
-
-# outpath <- "C:/Users/nich980/data/hector/output/nominal_run.csv"
 # write.csv(rslts, outpath, row.names = FALSE)
 # message( paste0( "Output written to ", outpath ) )
