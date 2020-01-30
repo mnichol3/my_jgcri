@@ -1,0 +1,10 @@
+# diff-FullEmissions-BC-Pshift.yaml
+# This file holds directories and other metadata for quick diffing of 
+# CEDS Uncertainty output .csv files
+
+- file: fullEmissions-BC-Pshift-ACTUAL.csv
+  path: C:\Users\nich980\data\CEDS\CEDS-uncertainty\output
+  needs_clean: !!bool false
+- file: fullEmissions-BC-Pshift.csv
+  path: C:\Users\nich980\code\CEDS-dev\input
+  needs_clean: !!bool true
