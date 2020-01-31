@@ -97,10 +97,8 @@ Note: The shortcuts listed below are the Windows/Linux versions. Mac is for nerd
 * Save active document: `Ctrl + S`
 * Close active document: `Ctrl + W`
 * Close all open documents: `Crtl + Shift + W`
-
 * Run current line/selection: `Ctrl + Enter`
 * Source a file: `Ctrl + Shift + O`
-
 * Go to line: `Shift + Alt + G`
 * Jump to: `Shift + Alt + J`
 * Previous tab: `Ctrl + F11`
