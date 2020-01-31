@@ -10,10 +10,6 @@ Hector currently consists of two main parts: a front-end, written in R; and a C+
 
 
 
-## Functionality
-
-
-
 ## Package Data
 The Hector package comes with its own package data, located in `R/sysdata.rda`. In order for modifications to the data files in `data-raw/` to take effect, you re-build `sysdata.rda`. Not re-building the package data after implementing changes to R API function or variable names is a common cause of integration test failures on Github.
 
