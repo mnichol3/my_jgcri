@@ -1,8 +1,43 @@
 # Hector Dev Notes
+This document holds tips, tricks, and other various snippets that I find extremely helpful when contributing to the development of [The Hector Simple Climate Model ](https://github.com/JGCRI/hector) 
+
 
 ## Components
 
+
+
 ## Functionality
+
+
+
+## Package Data
+The Hector package comes with its own package data, located in `R/sysdata.rda`. In order for modifications to the data files in `data-raw/` to take effect, you re-build `sysdata.rda`. Not re-building the package data after implementing changes to R API function or variable names is a common cause of integration test failures on Github.
+
+### Re-build sysdata in Rstudio
+To re-build the package data after making changes, navigate to the `data-raw` directory and open the data file you modified. Source the file, then click `Install and Restart`. This will add the new data to `sysdata.rda`
+
+**Example**
+
+For example, development of the `fetchvars_all` function required a data file containing names of Hector variables to be added to the package data. A tab-delimited text file was placed in `data-raw/`, and a function that opened the file and read the data was added to `data-raw/units-data.R`. 
+
+In order to make the data from the text file available to the R functions, `sysdata.rda` needs to be updated. 
+
+1. Open & source `units-data.R`
+  Since the function that reads the data from the text file is located in `data-raw/units-data.R`, sourcing the file will make Rstudio read the data file. 
+  You can either use the command `source('...hector/data-raw/units-data.R')` or open the `data-raw/units-data.R` file and click the **Source** button located in the top right corner of the editor pane.
+
+    A message will be displayed on the console that looks something like this:
+    ```
+    > source('C:/Users/nich980/code/hector/data-raw/units-data.R')
+    ✔ Setting active project to 'C:/Users/nich980/code/hector'
+    ✔ Saving 'unitstable' to 'R/sysdata.rda'
+    ```
+
+2. Re-build the package by clicking the **Install and Restart** button under the **Build** tab of the environment pane
+
+Thats it! Your `sysdata.rda` file is now updated.
+
+
 
 ## Input files
 Hector relies on input files located in `input/` in order to run. The The primary input file that drives Hector 
