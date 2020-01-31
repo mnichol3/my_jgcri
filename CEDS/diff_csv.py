@@ -3,11 +3,6 @@ Author: Matt Nicholson
 20 Jan 2020
 
 This script reads two .csv files and "diffs", or compares, them
-
-Usage
-------
-
-> python diff_csv.py /path/to/first.csv /path/to/second.csv
 """
 import argparse
 import yaml
