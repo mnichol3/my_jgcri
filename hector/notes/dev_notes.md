@@ -1,8 +1,12 @@
-# Hector Dev Notes
+Hector Dev Notes
+=================
 This document holds tips, tricks, and other various snippets that I find extremely helpful when contributing to the development of [The Hector Simple Climate Model ](https://github.com/JGCRI/hector) 
 
 
-## Components
+## Structure
+Hector currently consists of two main parts: a front-end, written in R; and a C++ back-end. The Hector R package provides a simple, user-friendly interface and utilizes the `Rcpp` package to flawlessly interface with the C++ backend, which does all the heavy lifting. Using a compiled back-end allows thousands of Hector runs to be executed in a matter of minutes. 
+
+### R Interface
 
 
 
@@ -79,3 +83,46 @@ By setting `enabled=0`, Hector will ignore this component.
 
 The final solution, completeness in mind, was to source emission data not included in `gas_paris_med.csv` from 
 `hector_rcp45.csv`.
+
+
+
+## Rstudio Shortcuts
+Below are some helpful Rstudio keyboard shortcuts that I can't seem to memorize no matter how many times I use them. This is not meant to be an exhaustive list. See the [Rstudio docs](https://support.rstudio.com/hc/en-us/articles/200711853-Keyboard-Shortcuts) for a complete list of default keyboard shortcuts.
+
+Note: The shortcuts listed below are the Windows/Linux versions. Mac is for nerds. 
+
+### Source Editor
+* Comment/uncomment lines : `Crtl + Shift + C`
+* Open document: `Crtl + O`
+* Save active document: `Ctrl + S`
+* Close active document: `Ctrl + W`
+* Close all open documents: `Crtl + Shift + W`
+
+* Run current line/selection: `Ctrl + Enter`
+* Source a file: `Ctrl + Shift + O`
+
+* Go to line: `Shift + Alt + G`
+* Jump to: `Shift + Alt + J`
+* Previous tab: `Ctrl + F11`
+* Next tab: `Ctrl + F12`
+* First tab: `Ctrl + Shift + F11` 
+* Last tab: `Ctrl + Shift + F12`
+* Find and Replace: `Ctrl + F`
+
+### Build
+* Build and Reload: `Ctrl + Shift + B`
+* Load All (devtools): `Ctrl + Shift + L`
+* Test Package: `Ctrl + Shift + T`
+* Check Package: `Ctrl + Shift + E`
+* Document Package: `Crtl + Shift + D`
+
+### Git
+* Diff active source document: `Ctrl + Alt + D`
+* Commit changes: `Ctrl + Alt + M`
+* Scroll diff view: `Ctrl + Up/Down`
+* Stage/Unstage: `Spacebar`
+* Stage/Unstage and move to next: `Enter`
+
+### Session
+* Quit Session: `Ctrl + Q`
+* Restart R Session: `Ctrl + Shift + F10`
