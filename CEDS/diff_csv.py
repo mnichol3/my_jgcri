@@ -130,10 +130,15 @@ else:
         
 validate_path(path_csv_1, path_csv_2)
 
-print('\nReading {}...'.format(path_csv_1))
+str_1 = str(path_csv_1)
+str_2 = str(path_csv_2)
+
+max_len = max(len(str_1), len(str_2))
+
+print('\nReading {}...{}as csv_1...'.format(path_csv_1, ''.ljust(max_len - len(str_1), '.')))
 csv_1 = pd.read_csv(path_csv_1, sep=args.sep, header=arg_header)
 
-print('Reading {}...'.format(path_csv_2))
+print('Reading {}...{}as csv_2...'.format(path_csv_2, ''.ljust(max_len - len(str_2), '.')))
 csv_2 = pd.read_csv(path_csv_2, sep=args.sep, header=arg_header)
 
 # ==============================================================================
