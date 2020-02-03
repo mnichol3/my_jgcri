@@ -27,6 +27,6 @@ After installing the prerequisite libraries detailed above, activating the revn 
 
 There are two ways to activate the CEDS renv environment:
 * Via RStudio: `renv::restore()`
-* Via command line: `Rscript -e "renv::restore()")
+* Via command line: `Rscript -e "renv::restore()"`
 
 Note: renv *should* install itself if not already installed, but if this fails, renv can be installed manually with `install.packages("renv")`
