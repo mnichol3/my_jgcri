@@ -39,7 +39,7 @@ git clone https://github.com/ashiklom/hector-rcmip.git
 Once you have a local clone of the repo, `renv` will install all required dependencies. 
 * To install the packages from Rstudio: `renv::restore()`
 * To install the packages from the command line:
-  *  Navigate to the `hector-rcmip` directory and enter the command: `Rscript -e 'renv::restore()`
+  *  Navigate to the `hector-rcmip` directory and enter the command: `Rscript -e "renv::restore()"`
 
 The `renv` package *should* install itself if not already installed. If this fails, `renv` can be installed manually with `install.packages("renv")`
 
