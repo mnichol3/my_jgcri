@@ -16,7 +16,7 @@ downloadPackage <- function( pckg, vers_num ) {
     outcome <- 0
 
     dl_error <- tryCatch( devtools::install_version( pckg, version=vers_num,
-                                                     repo=repo_url, dependencies=T,
+                                                     repo=repo_url, dependencies=c("Depends", "Imports"),
                                                      upgrade="never" ),
                           error = function( e ) e   # Leave as-is or else inherits() call fails
     )
