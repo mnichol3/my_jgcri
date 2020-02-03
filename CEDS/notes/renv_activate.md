@@ -22,7 +22,7 @@ The prerequisite software libraries can be downloaded via the system-specific in
 * Mac
   * TODO
   
-## Activating renv and downloading packages
+## Activating renv and installing dependency packages
 After installing the prerequisite libraries detailed above, activating the revn environment will begin the download and installation of CEDS dependency packages. 
 
 There are two ways to activate the CEDS renv environment:
