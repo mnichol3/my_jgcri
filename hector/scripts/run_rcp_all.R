@@ -1,4 +1,9 @@
-### 
+### Run all Hector RCP scenarios
+#
+# Usage
+# -----
+# From the root Hector directory:
+# source("/mnt/c/Users/nich980/code/my_jgcri/hector/scripts/run_rcp_all.R")
 
 library(hector)
 
@@ -16,10 +21,10 @@ parse_outpath <- function() {
 
 run_scenario <- function(rcp, outpath) {
   f_in <- paste0("input/hector_rcp", rcp, ".ini")
-  ini_file <- system.file("input/hector_rcp45.ini", package = "hector")
+  ini_file <- system.file("input/hector_rcp45.ini", package="hector")
 
-  #core <- newcore(ini_file, loglevel = 0, suppresslogging = F)
-  core <- newcore(ini_file)
+  #core <- newcore(ini_file, loglevel=0, suppresslogging=FALSE)
+  core <- newcore(ini_file, name=paste0("rcp_", rcp))
   run(core)
   
   vars <- c(ATMOSPHERIC_CH4(), ATMOSPHERIC_CO2(), ATMOSPHERIC_N2O(),
@@ -30,10 +35,10 @@ run_scenario <- function(rcp, outpath) {
             
   rslt <- fetchvars(core, 1745:2400, vars)
   
-  f_out <- paste0("output_rcp", rcp, ".csv")
+  f_out <- paste0("output_rcp", rcp, "_v2.3.0.csv")
   outpath <- file.path(outpath, f_out)
   
-  write.csv(rslt, outpath, row.names = FALSE)
+  write.csv(rslt, outpath, row.names=FALSE)
   message( paste0( "Output written to ", outpath ) )
 }
 
