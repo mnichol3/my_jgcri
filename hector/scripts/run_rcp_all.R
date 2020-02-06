@@ -2,18 +2,19 @@
 
 library(hector)
 
-def parse_outpath <- function() {
+parse_outpath <- function() {
   # Determine the path of the output dir based on the operating system
   if(.Platform$OS.type == "unix") {
-    prefix <- "/mnt/c/"
+    prefix <- "/mnt/c"
   } else {
     prefix <- "C:"
   }
-  outpath <- file.path(prefix, "Users", "nich980", "hector-worktrees", "release_v2.3.0", "output")
+  outpath <- file.path(prefix, "Users", "nich980", "code",
+                       "hector-worktrees", "release_v2.3.0", "output")
 }
 
 
-run_scenario <- function(rcp) {
+run_scenario <- function(rcp, outpath) {
   f_in <- paste0("input/hector_rcp", rcp, ".ini")
   ini_file <- system.file("input/hector_rcp45.ini", package = "hector")
 
@@ -32,10 +33,11 @@ run_scenario <- function(rcp) {
   f_out <- paste0("output_rcp", rcp, ".csv")
   outpath <- file.path(outpath, f_out)
   
-  write.csv(rslts, outpath, row.names = FALSE)
+  write.csv(rslt, outpath, row.names = FALSE)
   message( paste0( "Output written to ", outpath ) )
 }
 
 outpath <- parse_outpath()
 rcps = c("26", "45", "60", "85")
-lapply(rcps, run_scenario, arg1=outpath)
+
+lapply(rcps, run_scenario, outpath=outpath)
