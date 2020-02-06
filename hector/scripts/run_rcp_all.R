@@ -21,8 +21,13 @@ run_scenario <- function(rcp) {
   core <- newcore(ini_file)
   run(core)
   
-  vars <- c(ATMOSPHERIC_CH4(), ATMOSPHERIC_CO2(), ATMOSPHERIC_N2O())
-  rslt <- fetchvars(core, 2100:2150, vars)
+  vars <- c(ATMOSPHERIC_CH4(), ATMOSPHERIC_CO2(), ATMOSPHERIC_N2O(),
+            DETRITUS_C(), VEG_C(), SOIL_C(),
+            RF_TOTAL(), RF_CO2(),
+            GLOBAL_TEMP(), OCEAN_SURFACE_TEMP()
+            )
+            
+  rslt <- fetchvars(core, 1745:2400, vars)
   
   f_out <- paste0("output_rcp", rcp, ".csv")
   outpath <- file.path(outpath, f_out)
