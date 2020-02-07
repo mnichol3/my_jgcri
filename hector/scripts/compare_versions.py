@@ -11,27 +11,23 @@ import matplotlib.pyplot as plt
 from os.path import join, exists
 from sys import platform
 
+# ========================= Define HectorOutput Class ==========================
 
 def Class HectorOutput
     """
     A simple class to represent a Hector output file
     
-    Attributes
-    ----------
-    * path : str
-        Absolute path of the output file
-    * version : str
-        Hector version that produced the output
-    * scenario : str
-        Hector RCP scenario
-    * output : Pandas DataFrame
-        The Hector output
-    * year_first : str
-        First output year
-    * year_last
-        Last output year
-    * output_vars : list of str
-        Variables for which there is output
+    Class Methods
+    --------------
+    __init__(abs_path, scenario, version, years=None, vars=None)
+        Constructor
+    _parse_output(self, vars=None, years=None)
+        Determines which output file parsing method to call based on the Hector
+        version that produced the output file.
+    _parse_outputstream(self, vars=None, years=None)
+        Reads a Hector output file produced by Hector's C++ outputstream functions
+    _parse_fetchvars(self, vars=None, years=None)
+        Reads a Hector output file produced by R Hector's fetchvars() function
     """
     
     def __init__(self, abs_path, scenario, version, years=None, vars=None):
@@ -43,7 +39,7 @@ def Class HectorOutput
         abs_path : str
             Absolute path of the output file.
         scenario : str
-            Hector RCP scenario.
+            Hector RCP scenario. Format: 'rcp_XX'
         version : str
             Hector version that produced the output file.
         years : tuple, optional
@@ -54,6 +50,27 @@ def Class HectorOutput
             List of Hector output variables to filter. If given, only output 
             from these variables will be held in the DataFrame. Default is 
             to include all variables.
+            
+        Instance Attributes
+        --------------------
+        * path : str
+            Absolute path of the output file
+        * version : str
+            Hector version that produced the output
+        * scenario : str
+            Hector RCP scenario
+        * output : Pandas DataFrame
+            The Hector output
+        * year_first : str
+            First output year
+        * year_last
+            Last output year
+        * output_vars : list of str
+            Variables for which there is output
+            
+        Example usage
+        --------------
+        HectorOutput(<path>, "rcp45", "2.3.0", years=(1900, 2300), vars=['Ca', 'Tgav']
         """
         if (!exists(abs_path)):
             raise FileNotFoundError('Could not locate {}'.format(abs_path))
@@ -66,7 +83,6 @@ def Class HectorOutput
         self.output_vars = None
         self.output = _parse_output(path, vars=None, years=None)
         
-    
     def _parse_output(self, vars=None, years=None):
         """
         Read the Hector output file into a Pandas DataFrame
@@ -76,11 +92,7 @@ def Class HectorOutput
         if (self.version != '2.3.0'):
             return self._parse_outputstream(vars=vars, years=years)
         else:
-            return self._parse_fetchvars(vars=vars, years=years)
-        
-
-
-
+            return self._parse_fetchvars(vars=vars, years=years)        
 
     def _parse_outputstream(self, vars=None, years=None):
         """
@@ -89,11 +101,11 @@ def Class HectorOutput
         
         Params
         ------
-        vars : list of str; optional
+        vars : list of str, optional
             Output variables to filter. If given, variables not included in this
             list will be removed from the DataFrame. Default is to include all
             output variables present in the file.
-        years : tuple of int or tuple of str; optional
+        years : tuple of int or tuple of str, optional
             Years to filter output by.
             Example: If years == (1900, 2100), only output from years [1900, 2100]
                      will be included in the final DataFrame
@@ -110,6 +122,8 @@ def Class HectorOutput
           * Includes the output from while Hector is in spinup. 
             The corresponding year is the spinup year & ['spinup'] == 1.
           * Includes a version string in row 0
+          * The scenario column (named run_name) format is 'rcpXX', instead of 
+            'rcp_XX'
         """
         skipr = 0
         headr = 1
@@ -125,8 +139,14 @@ def Class HectorOutput
         # Rename the 'run_name' column as 'scenario' to match R Hector output
         df_out = df_out.rename(columns={'run_name': 'scenario'})
         
+        # Re-format the 'scenario' column to match current Hector versions
+        # Ex: 'rcp45' --> 'rcp_45'
+        df_out['scenario'] = df_out['scenario'].apply(lambda x: x[:3] + '_' + x[3:])
+        
         # Subset the desired output variables, if applicable
         if (vars):
+            if (not isinstance(vars, list)):  # Cast as list, if needed
+                vars = [vars]
             df_out = df_out.loc[df_out['variable'].isin(vars)]
         
         # Extract a tim subset, if applicable
@@ -136,8 +156,6 @@ def Class HectorOutput
             df_out = df_out.loc[(df_out['year'] >= yr_min) & (df_out['year'] <= yr_max)]
         
         return df_out
-        
-        
         
     def _parse_fetchvars(self, vars=None, years=None):
         """
@@ -146,11 +164,11 @@ def Class HectorOutput
          
         Params
         ------
-        vars : list of str; optional
+        vars : list of str, optional
             Output variables to filter. If given, variables not included in this
             list will be removed from the DataFrame. Default is to include all
             output variables present in the file.
-        years : tuple of int or tuple of str; optional
+        years : tuple of int or tuple of str, optional
             Years to filter output by.
             Example: If years == (1900, 2100), only output from years [1900, 2100]
                      will be included in the final DataFrame
@@ -158,6 +176,10 @@ def Class HectorOutput
         Return
         ------
         Pandas DataFrame
+        
+        Notes
+        ------
+        Typical column names: ['scenario', 'year', 'variable', 'value', 'units']
         """
         skipr = None
         headr = 0
@@ -166,6 +188,8 @@ def Class HectorOutput
         
         # Subset the desired output variables, if applicable
         if (vars):
+            if (not isinstance(vars, list)):  # Cast as list, if needed
+                vars = [vars]
             df_out = df_out.loc[df_out['variable'].isin(vars)]
         
         # Extract a tim subset, if applicable
@@ -176,6 +200,7 @@ def Class HectorOutput
         
         return df_out
         
+# ------------------------- End HectorOutput Class def -------------------------
         
         
     
