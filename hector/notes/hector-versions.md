@@ -6,7 +6,9 @@
 | 2.3.0   | 2 Jan 2020   | [`16c480a`](https://github.com/JGCRI/hector/commit/16c480ae951000adda287d84c02b3d58f538d48c) | Constrain atmospheric CO2 concentration during the model spinup |
 | 2.2.2   | 4 May 2019   | [`fddfed5`](https://github.com/JGCRI/hector/commit/fddfed55c262edf1eb068a4ef63e48bc35d05ff8) | Introduce R Hector interface |
 | 2.2.0   | 25 Mar 2019  | [`6a8f89b`](https://github.com/JGCRI/hector/commit/6a8f89b48d5427548929634d4d2fe0dea28c8217) | Add `VOLCANIC_SCALE` parameter |
-| 2.0.1   | 19 Mar 2019  | [`b52ded1`](https://github.com/JGCRI/hector/commit/b52ded1ec7c74f95729ef8e1064badb9a63b121f) | Incorporated DOECLIM ocean heat model |
+| 2.1.0   | 9 Feb 2019   | [`5d1deab`](https://github.com/JGCRI/hector/commit/5d1deab1d8b6ed0c5f9fc4bb3e35c6505a84b5d4) | Ocean Component time series|
+| 2.0.1   | 19 Mar 2018  | [`b52ded1`](https://github.com/JGCRI/hector/commit/b52ded1ec7c74f95729ef8e1064badb9a63b121f) | Incorporated DOECLIM ocean heat model |
+| 2.0.0   | 8 Mar 2018   | [`b962ec5`](https://github.com/JGCRI/hector/commit/b962ec523252b82d30bb5d9154265512338c3161) | Last Pre-DOECLIM version |
 | 1.1.4   | 30 Jun 2017  | [`ec9af49`](https://github.com/JGCRI/hector/commit/ec9af49fccc34fc857c2745f3ea3d691b48984d7) | GSL libraries no longer required |
 | 1.1.3   | 23 Feb 2016  | [`7f87172`](https://github.com/JGCRI/hector/commit/7f87172a75112c48ae0b29f84194ee593c26f709) | Model returns nonzero exit code on error|
 | 1.1.2   | 19 Nov 2015  | [`b66a15d`](https://github.com/JGCRI/hector/commit/b66a15d5e0a39b9fdc905b8910c228caef9977d9) | Add libhector build target for MacOS & Win |
