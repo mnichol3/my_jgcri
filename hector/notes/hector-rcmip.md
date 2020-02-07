@@ -39,7 +39,7 @@ git clone https://github.com/ashiklom/hector-rcmip.git
 Once you have a local clone of the repo, `renv` will install all required dependencies. 
 * To install the packages from Rstudio: `renv::restore()`
 * To install the packages from the command line:
-  *  Navigate to the `hector-rcmip` directory and enter the command: `Rscript -e 'renv::restore()`
+  *  Navigate to the `hector-rcmip` directory and enter the command: `Rscript -e "renv::restore()"`
 
 The `renv` package *should* install itself if not already installed. If this fails, `renv` can be installed manually with `install.packages("renv")`
 
@@ -51,9 +51,22 @@ The following message indicates that `renv` has finished downloading and install
 <br>
 
 ## Reproducing Tier 1 Analysis
-The Hector RCMIP Tier 1 analysis can be produced via `hector-rcmipscripts/tier-1-scenarios.R`
-* From Rstudio: `source("scripts/tier-1-scenarios.R")`
-* From command line: `Rscript scripts/tier-1-scenarios.R`
+Reproducing the Tier 1 analysis is broken up into two steps: the first step runs the Hector simulations and produces the output, and the second post-processes the outputs
+
+### Running the Hector Simulations
+The code to run the Hector simulations is contained in `scripts/01-run-simulations.R`. This script can be executed in one of two ways:
+* From Rstudio: `source("scripts/01-run-simulations.R")`
+* From command line: `Rscript scripts/01-run-simulations.R`
+
+This script produces a massive amount of output (~50 GB), mostly due to the large size of the probability runs. The outputs are written to the `output/zz-raw-output` directory, which contains the following subdirectories:
+* `probability/` stores the raw probability simulations (one `.csv` file per run). This directory will grow to a quite substantial size (~45 GB), but is not required for the post-processing script.
+* `probability-processed/` stores aggregated probability files (one [`fst`](https://www.fstpackage.org/) file per scenario). These files *are* used for post-processing (they can be read much faster than the `.csv` files), so you must download this directory if you wish to do post-processing on your local machine.
+* `single-run/` stores the individual simulations corresponding to different CMIP6 models (one `.csv` file per simulation). This directory is also used for post-processing, so it should be synced to any machine where you want to do the post-processing.
+
+### Post-Processing Simulation Output 
+Simulation post-processing is handled by the `scripts/02-process-outputs.R` script. Like the simulation script, this script can be run from within Rstudio or from the command line:
+* From Rstudio: `source("scripts/02-process-outputs.R")`
+* From command line: `Rscript scripts/02-process-outputs.R`
 
 <br>
 
