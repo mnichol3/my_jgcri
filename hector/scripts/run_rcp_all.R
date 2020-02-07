@@ -28,7 +28,7 @@ run_scenario <- function(rcp, outpath) {
   run(core)
   
   vars <- c(ATMOSPHERIC_CH4(), ATMOSPHERIC_CO2(), ATMOSPHERIC_N2O(),
-            DETRITUS_C(), VEG_C(), SOIL_C(),
+            DETRITUS_C(), VEG_C(), SOIL_C(), OCEAN_C(),
             RF_TOTAL(), RF_CO2(),
             GLOBAL_TEMP(), OCEAN_SURFACE_TEMP()
             )
