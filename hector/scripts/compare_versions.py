@@ -6,9 +6,11 @@ This script contains functions to compare output from various versions of
 PNNL-JGCRI's Hector Simple Climate Model
 
 """
+import re
 import pandas as pd
 import matplotlib.pyplot as plt
 from os.path import join, exists
+from os import walk
 from sys import platform
 
 # ========================= Define HectorOutput Class ==========================
@@ -201,9 +203,46 @@ def Class HectorOutput
         return df_out
         
 # ------------------------- End HectorOutput Class def -------------------------
-        
-        
+
+def parse_objects(root_dir):
+    """
+    Create a HectorOutput object for each output .csv file found in root_dir
     
+    Parameters
+    -----------
+    root_dir : str  
+        Path to the Hector output root directory
+    
+    Return
+    -------
+    dict of HectorOutput objects
+    """
+    def _parse_scenario(fname):
+        pattern = re.compile(r'_(rcp\d{2})')
+        match = re.search(pattern, fname)
+        scenario = match.groups()[0]
+        return scenario
+        
+    def _parse_meta(f_path):
+        splits  = fname.split('\\')
+        if (len(splits) == 1):
+            splits = fname.split('/')  # Linux case
+        version  = splits[-2].replace('v', '').replace('_', '.')
+        fname    = splits[-1]
+        scenario = _parse_scenario(fname)
+        key = '{}-{}'.format(version, scenario)
+        obj = HectorOutput(f_path, scenario, version)
+        return (key, obj)
+        
+    files = []
+    for root, dirs, files in walk(root_dir):
+        for f in files:
+            if (f.endswith('.csv')):
+                files.append(join(root, f))
+    keys, objs = zip(*[_parse_meta(f) for f in files])
+    obj_dict = {key: obj for (key, obj) in zip(keys, objs)}
+    return obj_dict
+        
 ### Get the appropriately-formatted path for whatever OS is running the script.
 # Hard-coded but who cares nothing matters
 if (platform.startswith('linux')):
@@ -217,12 +256,14 @@ else:
 
 ### Hector variables that we're interested in
 # Hector outputstream vars (Pre-v2.x.x)
-vars_old = ['Tgav', 'Ca', 'atmos_c', 'veg_c', 'detritus_c', 'soil_c', 'ocean_c',
-            'FCO2', 'Ftot']
+# 'ocean_c' is unavail for the current Hector
+# vars_old = ['Tgav', 'Ca', 'atmos_c', 'veg_c', 'detritus_c', 'soil_c', 'ocean_c',
+            # 'FCO2', 'Ftot']
 
 # Current Hector (>= v2.3.0) vars
-vars_curr = ['Tgav', 'Ca', 'atmos_c', 'veg_c', 'detritus_c', 'soil_c',
-             'FCO2', 'Ftot']
+# vars_curr = ['Tgav', 'Ca', 'atmos_c', 'veg_c', 'detritus_c', 'soil_c', 'FCO2', 'Ftot']
+ vars = ['Tgav', 'Ca', 'atmos_c', 'veg_c', 'detritus_c', 'soil_c', 'FCO2', 'Ftot']
+ 
 ### Build a dictionary of the absolute paths of output files for the given Hector versions
 v_out = {
     'v2_0_0': {
