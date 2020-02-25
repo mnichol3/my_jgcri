@@ -4,35 +4,24 @@ Matt Nicholson
 
 This script contains functions to compare output from various versions of 
 PNNL-JGCRI's Hector Simple Climate Model
-
 """
 import re
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+
 from os.path import join, exists
 from os import walk
 from sys import platform
 
 # ========================= Define HectorOutput Class ==========================
 
-def Class HectorOutput
+class HectorOutput:
     """
     A simple class to represent a Hector output file
-    
-    Class Methods
-    --------------
-    __init__(abs_path, scenario, version, years=None, vars=None)
-        Constructor
-    _parse_output(self, vars=None, years=None)
-        Determines which output file parsing method to call based on the Hector
-        version that produced the output file.
-    _parse_outputstream(self, vars=None, years=None)
-        Reads a Hector output file produced by Hector's C++ outputstream functions
-    _parse_fetchvars(self, vars=None, years=None)
-        Reads a Hector output file produced by R Hector's fetchvars() function
     """
     
-    def __init__(self, abs_path, scenario, version, years=None, vars=None):
+    def __init__(self, abs_path, years=None, vars=None):
         """
         Constructor for the HectorOutput class
         
@@ -74,29 +63,49 @@ def Class HectorOutput
         --------------
         HectorOutput(<path>, "rcp45", "2.3.0", years=(1900, 2300), vars=['Ca', 'Tgav']
         """
-        if (!exists(abs_path)):
-            raise FileNotFoundError('Could not locate {}'.format(abs_path))
-            
-        self.path = abs_path
-        self.scenario = scenario
-        self.version = version
-        self.year_first = None
-        self.year_last = None
-        self.output_vars = None
-        self.output = _parse_output(path, vars=None, years=None)
+        if (not exists(abs_path)):
+            raise FileNotFoundError('Could not locate {}'.format(abs_path)) 
+        self.path        = abs_path
+        self.scenario    = self._parse_scenario(abs_path)
+        self.version     = self._parse_version(abs_path)
+        self.year_first  = None
+        self.year_last   = None
+        self.output_vars = vars
+        self.output = self._parse_output(abs_path, vars=vars, years=years)
+        self._parse_years(years)
         
-    def _parse_output(self, vars=None, years=None):
+    def _parse_scenario(self, path):
+        pattern = re.compile(r'_(rcp\d{2})')
+        match = re.search(pattern, path)
+        scenario = match.groups()[0]
+        return scenario
+        
+    def _parse_version(self, path):
+        splits  = path.split('\\')
+        if (len(splits) == 1):
+            splits = path.split('/')  # Linux case
+        version  = splits[-2].replace('v', '').replace('_', '.')
+        return version
+    
+    def _parse_years(self, years):
+        if (years):
+            self.year_first, self.year_last = years
+        else:
+            self.year_first = None
+            self.year_last  = None
+        
+    def _parse_output(self, path, vars=None, years=None):
         """
         Read the Hector output file into a Pandas DataFrame
         """
         # Hector outputstream csv files have a version string in row 0 that we
         # need to discard
         if (self.version != '2.3.0'):
-            return self._parse_outputstream(vars=vars, years=years)
+            return self._parse_outputstream(path, vars=vars, years=years)
         else:
-            return self._parse_fetchvars(vars=vars, years=years)        
+            return self._parse_fetchvars(path, vars=vars, years=years)        
 
-    def _parse_outputstream(self, vars=None, years=None):
+    def _parse_outputstream(self, path, vars=None, years=None):
         """
         Read a Hector output CSV file from a pre-v2.3.0 version of Hector.
         This file is written by Hector's C++ outputstream functions.
@@ -129,37 +138,29 @@ def Class HectorOutput
         """
         skipr = 0
         headr = 1
-        
         df_out = pd.read_csv(path, sep=',', skiprows=skipr, header=headr)
-        
         # Extract only non-spinup output
         df_out = df_out.loc[df_out['spinup'] != 1]
-        
         # Drop the 'spinup' & 'component' columns
         df_out = df_out.drop(['spinup', 'component'], axis=1)
-        
         # Rename the 'run_name' column as 'scenario' to match R Hector output
         df_out = df_out.rename(columns={'run_name': 'scenario'})
-        
         # Re-format the 'scenario' column to match current Hector versions
         # Ex: 'rcp45' --> 'rcp_45'
         df_out['scenario'] = df_out['scenario'].apply(lambda x: x[:3] + '_' + x[3:])
-        
         # Subset the desired output variables, if applicable
         if (vars):
             if (not isinstance(vars, list)):  # Cast as list, if needed
                 vars = [vars]
             df_out = df_out.loc[df_out['variable'].isin(vars)]
-        
         # Extract a tim subset, if applicable
         if (years):
             yr_min = int(years[0])
             yr_max = int(years[1])
             df_out = df_out.loc[(df_out['year'] >= yr_min) & (df_out['year'] <= yr_max)]
-        
         return df_out
         
-    def _parse_fetchvars(self, vars=None, years=None):
+    def _parse_fetchvars(self, path, vars=None, years=None):
         """
         Read Hector output from a CSV file containing output from the R Hector
         API 'fetchvars' function. Only valid for Hector versions >= v2.2.2
@@ -185,74 +186,37 @@ def Class HectorOutput
         """
         skipr = None
         headr = 0
-        
         df_out = pd.read_csv(path, sep=',', skiprows=skipr, header=headr)
-        
         # Subset the desired output variables, if applicable
         if (vars):
             if (not isinstance(vars, list)):  # Cast as list, if needed
                 vars = [vars]
             df_out = df_out.loc[df_out['variable'].isin(vars)]
-        
         # Extract a tim subset, if applicable
         if (years):
             yr_min = int(years[0])
             yr_max = int(years[1])
             df_out = df_out.loc[(df_out['year'] >= yr_min) & (df_out['year'] <= yr_max)]
-        
         return df_out
         
 # ------------------------- End HectorOutput Class def -------------------------
 
-def parse_objects(root_dir):
-    """
-    Create a HectorOutput object for each output .csv file found in root_dir
-    
-    Parameters
-    -----------
-    root_dir : str  
-        Path to the Hector output root directory
-    
-    Return
-    -------
-    dict of HectorOutput objects
-    """
-    def _parse_scenario(fname):
+def generate_obj(out_file):
+    def _parse_key(f_path):
         pattern = re.compile(r'_(rcp\d{2})')
-        match = re.search(pattern, fname)
+        match = re.search(pattern, f_path)
         scenario = match.groups()[0]
-        return scenario
-        
-    def _parse_meta(f_path):
-        splits  = fname.split('\\')
+        splits  = f_path.split('\\')
         if (len(splits) == 1):
-            splits = fname.split('/')  # Linux case
+            splits = f_path.split('/')  # Linux case
         version  = splits[-2].replace('v', '').replace('_', '.')
-        fname    = splits[-1]
-        scenario = _parse_scenario(fname)
-        key = '{}-{}'.format(version, scenario)
-        obj = HectorOutput(f_path, scenario, version)
-        return (key, obj)
-        
-    files = []
-    for root, dirs, files in walk(root_dir):
-        for f in files:
-            if (f.endswith('.csv')):
-                files.append(join(root, f))
-    keys, objs = zip(*[_parse_meta(f) for f in files])
-    obj_dict = {key: obj for (key, obj) in zip(keys, objs)}
-    return obj_dict
-        
-### Get the appropriately-formatted path for whatever OS is running the script.
-# Hard-coded but who cares nothing matters
-if (platform.startswith('linux')):
-    #root_wtree  = '/mnt/c/Users/nich980/code/hector-worktrees'
-    root_output = '/mnt/c/Users/nich980/data/hector/version-comparison'
-elif (platform.startswith('win')):
-    #root_wtree  = 'C:\\Users\\nich980\\code\\hector-worktrees'
-    root_output = 'C:\\Users\\nich980\\data\\hector\\version-comparison'
-else:
-    raise OSError("Only Windows and Unix/Linux systems are supported")
+        k = '{}-{}'.format(version, scenario)
+        return k
+    key = _parse_key(out_file)
+    obj = HectorOutput(out_file, years=(1750, 2300), vars=vars)
+    return (key, obj)
+
+root_output = 'C:\\Users\\nich980\\data\\hector\\version-comparison'
 
 ### Hector variables that we're interested in
 # Hector outputstream vars (Pre-v2.x.x)
@@ -262,35 +226,30 @@ else:
 
 # Current Hector (>= v2.3.0) vars
 # vars_curr = ['Tgav', 'Ca', 'atmos_c', 'veg_c', 'detritus_c', 'soil_c', 'FCO2', 'Ftot']
- vars = ['Tgav', 'Ca', 'atmos_c', 'veg_c', 'detritus_c', 'soil_c', 'FCO2', 'Ftot']
+vars = ['Tgav', 'Ca', 'atmos_c', 'veg_c', 'detritus_c', 'soil_c', 'FCO2', 'Ftot'] 
  
-### Build a dictionary of the absolute paths of output files for the given Hector versions
-v_out = {
-    'v2_0_0': {
-                'rcp26': join(root_output, 'v2_0_0', 'outputstream_rcp26.csv'),
-                'rcp45': join(root_output, 'v2_0_0', 'outputstream_rcp45.csv'),
-                'rcp60': join(root_output, 'v2_0_0', 'outputstream_rcp60.csv'),
-                'rcp85': join(root_output, 'v2_0_0', 'outputstream_rcp85.csv'),
-    },
-    'v2_0_1': {
-                'rcp26': join(root_output, 'v2_0_1', 'outputstream_rcp26.csv'),
-                'rcp45': join(root_output, 'v2_0_1', 'outputstream_rcp45.csv'),
-                'rcp60': join(root_output, 'v2_0_1', 'outputstream_rcp60.csv'),
-                'rcp85': join(root_output, 'v2_0_1', 'outputstream_rcp85.csv'),
-    },
-    'v2_1_0': {
-                'rcp26': join(root_output, 'v2_1_0', 'outputstream_rcp26.csv'),
-                'rcp45': join(root_output, 'v2_1_0', 'outputstream_rcp45.csv'),
-                'rcp60': join(root_output, 'v2_1_0', 'outputstream_rcp60.csv'),
-                'rcp85': join(root_output, 'v2_1_0', 'outputstream_rcp85.csv'),
-    },
-    'v2_3_0': {
-                'rcp26': join(root_output, 'v2_3_0', 'output_rcp26_v2.3.0.csv'),
-                'rcp45': join(root_output, 'v2_3_0', 'output_rcp26_v2.3.0.csv'),
-                'rcp60': join(root_output, 'v2_3_0', 'output_rcp26_v2.3.0.csv'),
-                'rcp85': join(root_output, 'v2_3_0', 'output_rcp26_v2.3.0.csv'),
-    },
-}
+output_dict = {
+    'v2_0_0': ['outputstream_rcp26.csv', 'outputstream_rcp45.csv',
+               'outputstream_rcp60.csv', 'outputstream_rcp85.csv'],
+    'v2_0_1': ['outputstream_rcp26.csv', 'outputstream_rcp45.csv',
+               'outputstream_rcp60.csv', 'outputstream_rcp85.csv'],
+    'v2_1_0': ['outputstream_rcp26.csv', 'outputstream_rcp45.csv',
+               'outputstream_rcp60.csv', 'outputstream_rcp85.csv'],
+    'v2_3_0': ['output_rcp26_v2.3.0.csv', 'output_rcp45_v2.3.0.csv',
+               'output_rcp60_v2.3.0.csv', 'output_rcp85_v2.3.0.csv']
+    }
+# Construct absolute paths of all output files
+out_files = [''] * 16
+idx = 0
+for key in output_dict.keys():
+    for val in output_dict[key]:
+        out_files[idx] = join(root_output, key, val)
+        idx += 1
+# Create a dictionary where the key is 'version-scenario' and the value is the
+# corresponding HectorOutput object
+# Ex: '2.0.0-rcp26':  <__main__.HectorOutput object at...
+output = {key: val for (key, val) in [generate_obj(f) for f in out_files]}
+
 
 
 
