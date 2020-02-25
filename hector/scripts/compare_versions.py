@@ -9,6 +9,7 @@ import re
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+import numpy as np
 
 from os.path import join, exists
 from os import walk
@@ -199,7 +200,57 @@ class HectorOutput:
             df_out = df_out.loc[(df_out['year'] >= yr_min) & (df_out['year'] <= yr_max)]
         return df_out
         
-# ------------------------- End HectorOutput Class def -------------------------
+# =============================== Plotting Funcs ===============================
+def trim_axs(axs, N):
+    """little helper to massage the axs list to have correct length..."""
+    axs = axs.flat
+    for ax in axs[N:]:
+        ax.remove()
+    return axs[:N]
+
+def plot_variables(hector_output, vars, years=(1750, 2300), scenario='RCP45'):
+    """
+    Plot output from HectorOutput objects
+    
+    Parameters
+    -----------
+    hector_output: dict
+        Dictionary of {str: HectorOutput obj}
+    vars : list of str
+        Output variables to plot
+    """
+    versions = ['2.0.0', '2.0.1', '2.1.0', '2.3.0']
+    plt.style.use('ggplot')
+    colors = cm.tab20(np.linspace(0, 1, len(vars)))
+    figsize = (10, 8)
+    cols = 4
+    rows = 4
+    fig, axs = plt.subplots(rows, cols, figsize=figsize, dpi=150, constrained_layout=True)
+    fig.suptitle('Hector Output by Version - {}'.format(scenario), fontsize=16)
+    axs = trim_axs(axs, len(vars))
+    x = np.asarray([x for x in range(years[0], years[1] + 1)])
+    for ax, var in zip(axs, vars):
+        ax.set_title(var)
+        for version_idx, version in enumerate(versions):
+            print(var, version)
+            version_df = hector_output[version].output
+            var_df = version_df.loc[version_df['variable'] == var]
+            units  = var_df['units'].unique().tolist()
+            y = np.asarray(var_df['value'])
+            ax.plot(x, y, c=colors[version_idx], ls='-', lw=1, label=version)
+        ax.set_ylabel('{}'.format(units))
+        ax.set_xticks([1750, 1850, 1950, 2050, 2150, 2250])
+        ax.set_xlim(1750, 2300)
+     # End vars loop
+    handles, labels = ax.get_legend_handles_labels()
+    leg = fig.legend(handles, labels, loc=4, bbox_to_anchor=(0.98,0.17), prop={'size': 8}, 
+                     ncol=2, title='Hector Version')
+    for legobj in leg.legendHandles:
+        legobj.set_linewidth(3.0)
+    f_name = 'version-comparison-{}.pdf'.format(scenario)
+    figManager = plt.get_current_fig_manager()
+    figManager.window.showMaximized()
+    plt.show()
 
 def generate_obj(out_file):
     def _parse_key(f_path):
@@ -210,7 +261,8 @@ def generate_obj(out_file):
         if (len(splits) == 1):
             splits = f_path.split('/')  # Linux case
         version  = splits[-2].replace('v', '').replace('_', '.')
-        k = '{}-{}'.format(version, scenario)
+        # k = '{}-{}'.format(version, scenario)
+        k = version
         return k
     key = _parse_key(out_file)
     obj = HectorOutput(out_file, years=(1750, 2300), vars=vars)
@@ -229,27 +281,20 @@ root_output = 'C:\\Users\\nich980\\data\\hector\\version-comparison'
 vars = ['Tgav', 'Ca', 'atmos_c', 'veg_c', 'detritus_c', 'soil_c', 'FCO2', 'Ftot'] 
  
 output_dict = {
-    'v2_0_0': ['outputstream_rcp26.csv', 'outputstream_rcp45.csv',
-               'outputstream_rcp60.csv', 'outputstream_rcp85.csv'],
-    'v2_0_1': ['outputstream_rcp26.csv', 'outputstream_rcp45.csv',
-               'outputstream_rcp60.csv', 'outputstream_rcp85.csv'],
-    'v2_1_0': ['outputstream_rcp26.csv', 'outputstream_rcp45.csv',
-               'outputstream_rcp60.csv', 'outputstream_rcp85.csv'],
-    'v2_3_0': ['output_rcp26_v2.3.0.csv', 'output_rcp45_v2.3.0.csv',
-               'output_rcp60_v2.3.0.csv', 'output_rcp85_v2.3.0.csv']
+    'v2_0_0': 'outputstream_rcp45.csv',
+    'v2_0_1': 'outputstream_rcp45.csv',
+    'v2_1_0': 'outputstream_rcp45.csv',
+    'v2_3_0': 'output_rcp45_v2.3.0.csv',
     }
 # Construct absolute paths of all output files
-out_files = [''] * 16
-idx = 0
-for key in output_dict.keys():
-    for val in output_dict[key]:
-        out_files[idx] = join(root_output, key, val)
-        idx += 1
+out_files = [join(root_output, key, val) for (key, val) in output_dict.items()]
+
 # Create a dictionary where the key is 'version-scenario' and the value is the
 # corresponding HectorOutput object
 # Ex: '2.0.0-rcp26':  <__main__.HectorOutput object at...
 output = {key: val for (key, val) in [generate_obj(f) for f in out_files]}
 
+plot_variables(output, vars, years=(1750, 2300), scenario='RCP45')
 
 
 
