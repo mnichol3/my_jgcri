@@ -235,7 +235,7 @@ def plot_variables(hector_output, vars, years=(1750, 2300), scenario='RCP45'):
             print(var, version)
             version_df = hector_output[version].output
             var_df = version_df.loc[version_df['variable'] == var]
-            units  = var_df['units'].unique().tolist()
+            units  = var_df['units'].unique().tolist()[0]
             y = np.asarray(var_df['value'])
             ax.plot(x, y, c=colors[version_idx], ls='-', lw=1, label=version)
         ax.set_ylabel('{}'.format(units))
