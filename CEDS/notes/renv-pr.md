@@ -20,3 +20,10 @@ Upon cloning the repository and navigating to the root CEDS directory, the user 
 * From an R session: `renv::::restore()`
 
 The `renv::restore()` function retrieves the library package metadata from `renv.lock` and installs the packages to the project's own library located in `CEDS/renv/library/<subdirs>/`. As an example, here is the full `renv` path from my CEDS-dev frozen emissions branch renv library: `CEDS-dev/renv/library/R-3.4/x86_64-pc-linux-gnu/`. The [renv docs](https://rstudio.github.io/renv/reference/restore.html) describe restoring a project in further detail.
+
+
+
+**Note**: The following packages were not discovered by renv's dependency scan (may not be required) but were installed anyway due to the package check in `parameters/global_settings.R`:
+  * reshape v0.8.6
+  * XML v3.98-1.5
+    * Installation of XML v3.98-1.5 failed; using v3.99-0.3 instead
