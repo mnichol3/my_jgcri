@@ -26,18 +26,18 @@ run_scenario <- function(rcp, outpath) {
   #core <- newcore(ini_file, loglevel=0, suppresslogging=FALSE)
   core <- newcore(ini_file, name=paste0("rcp_", rcp))
   run(core)
-  
+
   vars <- c(ATMOSPHERIC_CH4(), ATMOSPHERIC_CO2(), ATMOSPHERIC_N2O(),
-            DETRITUS_C(), VEG_C(), SOIL_C(),
+            DETRITUS_C(), VEG_C(), SOIL_C(), ATMOSPHERIC_C(),
             RF_TOTAL(), RF_CO2(),
-            GLOBAL_TEMP(), OCEAN_SURFACE_TEMP()
+            GLOBAL_TEMP()
             )
-            
+
   rslt <- fetchvars(core, 1745:2400, vars)
-  
+
   f_out <- paste0("output_rcp", rcp, "_v2.3.0.csv")
   outpath <- file.path(outpath, f_out)
-  
+
   write.csv(rslt, outpath, row.names=FALSE)
   message( paste0( "Output written to ", outpath ) )
 }
