@@ -23,16 +23,21 @@ def trim_axs(axs, N):
 
 def plot_variables(default_df, rcmip_df, vars, years=(1750, 2100), scenario='RCP45'):
     """
-    Plot output from HectorOutput objects
+    Plot output from default Hector and RCMIP Hector emissions
     
     Parameters
     -----------
-    hector_output: dict
-        Dictionary of {str: HectorOutput obj}
+    default_df : Pandas DataFrame
+        Default Hector emissions data
+    rcmip_df : Pandas DataFrame
+        RCMIP Hector emissions data
     vars : list of str
-        Output variables to plot
+        Variables to plot
+    years : tuple of (int, int)
+        Years that define variable timeseries
+    scenario : str
+        Emissions scenario
     """
-    versions = ['2.0.0', '2.0.1', '2.1.0', '2.3.0']
     plt.style.use('ggplot')
     figsize = (10, 8)
     cols = 4
@@ -69,18 +74,19 @@ def plot_variables(default_df, rcmip_df, vars, years=(1750, 2100), scenario='RCP
     figManager = plt.get_current_fig_manager()
     figManager.window.showMaximized()
     plt.show()
-
 # ------------------------------------------------------------------------------
-outpath_default = r"C:\Users\nich980\data\hector\version-comparison\v2_3_0\output_rcp45_v2.3.0.csv"
-outpath_rcmip   = r"C:\Users\nich980\data\hector\version-comparison\rcp45-default-rcmip.csv"
 
-# Read both output files and extract a list of variables in each
-df_default = pd.read_csv(outpath_default, sep=',', header=0)
-df_rcmip   = pd.read_csv(outpath_rcmip, sep=',', header=0)
+if __name__ == '__main__':
+    outpath_default = r"C:\Users\nich980\data\hector\version-comparison\v2_3_0\output_rcp45_v2.3.0.csv"
+    outpath_rcmip   = r"C:\Users\nich980\data\hector\version-comparison\rcp45-default-rcmip.csv"
 
-default_vars = df_default['variable'].unique().tolist()
-rcmip_vars   = df_rcmip['variable'].unique().tolist()
+    # Read both output files and extract a list of variables in each
+    df_default = pd.read_csv(outpath_default, sep=',', header=0)
+    df_rcmip   = pd.read_csv(outpath_rcmip, sep=',', header=0)
 
-vars = [x for x in rcmip_vars if x in default_vars]
+    default_vars = df_default['variable'].unique().tolist()
+    rcmip_vars   = df_rcmip['variable'].unique().tolist()
 
-plot_variables(df_default, df_rcmip, vars)
+    vars = [x for x in rcmip_vars if x in default_vars]
+
+    plot_variables(df_default, df_rcmip, vars)
