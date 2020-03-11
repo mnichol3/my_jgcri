@@ -41,7 +41,7 @@ def plot_variables(default_df, rcmip_df, vars, years=(1750, 2100), scenario='RCP
     plt.style.use('ggplot')
     figsize = (10, 8)
     cols = 4
-    rows = 4
+    rows = 2
     fig, axs = plt.subplots(rows, cols, figsize=figsize, dpi=150, constrained_layout=True)
     fig.suptitle('Hector Output - RCMIP Emissions vs. Default Emissions', fontsize=16)
     axs = trim_axs(axs, len(vars))
@@ -63,7 +63,7 @@ def plot_variables(default_df, rcmip_df, vars, years=(1750, 2100), scenario='RCP
         y = np.asarray(var_df['value'])
         ax.plot(x, y, c='r', ls='-', lw=1, label='RCMIP')
         ax.set_xticks([1750, 1850, 1950, 2050, 2150, 2250])
-        ax.set_xlim(1750, 2300)
+        ax.set_xlim(1750, 2100)
      # End vars loop
     handles, labels = ax.get_legend_handles_labels()
     leg = fig.legend(handles, labels, loc=4, bbox_to_anchor=(0.98,0.17), prop={'size': 8}, 
