@@ -13,8 +13,7 @@ from compare_rcmip import subset_years, trim_axs
 
 def plot_em_diff(default_df, rcmip_df, vars, years=(1750, 2100), scenario='RCP45'):
     """
-    Plot the difference between RCMIP & default Hector emissions for various
-    emissions species
+    Plot the difference between RCMIP & default Hector concentrations for various species
     
     Parameters
     -----------
