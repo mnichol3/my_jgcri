@@ -99,7 +99,7 @@ def plot_rcmip_ems(rcmip_ems, years=(1765, 2100)):
     plt.style.use('ggplot')
     figsize = (10, 8)
     fig, ax = plt.subplots()
-    fig.suptitle('Hector Input Emissions - RCMIP', fontsize=16)
+    plt.title('RCMIP N2O Emissions', fontsize=16)
     x = np.asarray([x for x in range(years[0], years[1] + 1)])
     # --- Subset the rcmip emissions df for scenario & years ---
     em_rcp45  = subset_rcmip_scenario(rcmip_ems, 'rcp45')
