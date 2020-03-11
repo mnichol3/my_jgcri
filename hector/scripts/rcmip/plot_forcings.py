@@ -75,9 +75,6 @@ if __name__ == '__main__':
     df_default = pd.read_csv(outpath_default, sep=',', header=0)
     df_rcmip   = pd.read_csv(outpath_rcmip, sep=',', header=0)
 
-    default_vars = df_default['variable'].unique().tolist()
-    rcmip_vars   = df_rcmip['variable'].unique().tolist()
-
     vars = ['Ftot', 'FCO2', 'FN2O', 'FBC', 'FOC', 'FSO2', 'FCH4']
 
     plot_forcings(df_default, df_rcmip, vars)
