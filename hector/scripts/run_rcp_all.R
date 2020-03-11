@@ -29,7 +29,7 @@ run_scenario <- function(rcp, outpath) {
 
   vars <- c(ATMOSPHERIC_CH4(), ATMOSPHERIC_CO2(), ATMOSPHERIC_N2O(),
             DETRITUS_C(), VEG_C(), SOIL_C(), ATMOSPHERIC_C(),
-            RF_TOTAL(), RF_CO2(),
+            RF_TOTAL(), RF_CO2(), RF_N2O(), RF_BC(), RF_OC(), RF_SO2(), RF_CH4(),
             GLOBAL_TEMP()
             )
 
