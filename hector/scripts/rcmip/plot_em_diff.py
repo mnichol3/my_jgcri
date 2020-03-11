@@ -34,7 +34,7 @@ def plot_em_diff(default_df, rcmip_df, vars, years=(1750, 2100), scenario='RCP45
     cols = 4
     rows = 4
     fig, axs = plt.subplots(rows, cols, figsize=figsize, dpi=150, constrained_layout=True)
-    fig.suptitle('Hector Output - RCMIP Emissions Minus Default Emissions', fontsize=16)
+    fig.suptitle('Hector Output - RCMIP Minus Default Concentrations', fontsize=16)
     axs = trim_axs(axs, len(vars))
     x = np.asarray([x for x in range(years[0], years[1] + 1)])
     default_df = subset_years(default_df, years)
