@@ -21,7 +21,7 @@ parse_outpath <- function() {
 
 run_scenario <- function(rcp, outpath) {
   f_in <- paste0("input/hector_rcp", rcp, ".ini")
-  ini_file <- system.file("input/hector_rcp45.ini", package="hector")
+  ini_file <- system.file("input/hector_rcp60.ini", package="hector")
 
   #core <- newcore(ini_file, loglevel=0, suppresslogging=FALSE)
   core <- newcore(ini_file, name=paste0("rcp_", rcp))
@@ -30,7 +30,7 @@ run_scenario <- function(rcp, outpath) {
   vars <- c(ATMOSPHERIC_CH4(), ATMOSPHERIC_CO2(), ATMOSPHERIC_N2O(),
             DETRITUS_C(), VEG_C(), SOIL_C(), ATMOSPHERIC_C(),
             RF_TOTAL(), RF_CO2(), RF_N2O(), RF_BC(), RF_OC(), RF_SO2(), RF_CH4(),
-            GLOBAL_TEMP()
+            GLOBAL_TEMP(), EMISSIONS_N2O()
             )
 
   rslt <- fetchvars(core, 1745:2400, vars)
