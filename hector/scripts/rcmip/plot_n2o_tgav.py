@@ -73,8 +73,9 @@ rcmip_em_2 = rcmip_df_2['N2O_emissions'].to_numpy()
 default_unit = 'Mt N'
 rcmip_unit = 'Tg N'
 
-# Convert the rcmip units to Mt
+# Convert the rcmip units to Mt (not really needed b/c 1 Tg == 1 Mt)
 rcmip_em = Units.conform(rcmip_em, Units('Tg'), Units('Mt'))
+rcmip_em_2 = Units.conform(rcmip_em_2, Units('Tg'), Units('Mt'))
 
 axs[1].plot(years, default_em, c='r', ls='--', lw=1, label='Default N2O Emissions')
 axs[1].plot(years, rcmip_em, c='g', ls=':', lw=1, label='RCMIP N2O Emissions')
