@@ -15,9 +15,26 @@ CEDS/
  |- renv.lock
 ```
 ### User Installation
-Upon cloning the repository and navigating to the root CEDS directory, the user can install all the packages needed to run CEDS in one of two ways:
+Upon cloning the repository and navigating to the root CEDS directory, the user can choose whether to install the CEDS R dependencies in their global R library or to create a separate library that won't affect their global R library. 
+
+#### Install Packages in Global R Library
+Users can install all the packages needed to run CEDS in one of two ways:
 * From the command line: `Rscript -e 'renv::restore()'`
 * From an R session: `renv::::restore()`
+
+#### Install Packages in Separate Project R Library
+Users can install CEDS dependencies in a library located in `CEDS/renv/library` via the `renv::init()` command. It is recommended to use the `bare = TRUE` argument to avoid `renv` interpreting and installing dependencies on its own. 
+
+* From the command line:
+    ```
+    $ Rscript -e 'renv::init(bare = TRUE)'
+    $ Rscript -e 'renv::restore()'
+    ````
+* From an R session:
+    ```
+    renv::init(bare = TRUE)
+    renv::::restore()
+    ```
 
 The `renv::restore()` function retrieves the library package metadata from `renv.lock` and installs the packages to the project's own library located in `CEDS/renv/library/<subdirs>/`. As an example, here is the full `renv` path from my CEDS-dev frozen emissions branch renv library: `CEDS-dev/renv/library/R-3.4/x86_64-pc-linux-gnu/`. The [renv docs](https://rstudio.github.io/renv/reference/restore.html) describe restoring a project in further detail.
 
