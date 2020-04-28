@@ -7,3 +7,6 @@ Change log for CEDS-dev fork intalled on the pic HPC cluster.
       * `'tidyselect' requires 'rlang (>= 0.4.3)'`
       * `'vctrs     ' requires 'rlang (>= 0.4.2)'`
       * `'lifecycle ' requires 'rlang (>= 0.4.0)'`
+    * Side-effects
+      * `XML       [3.99-0.3 -> *]`
+      * `reshape   [0.8.6 -> *]`
