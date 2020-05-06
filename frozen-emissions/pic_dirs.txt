@@ -1,0 +1,17 @@
+Frozen emissions pic directories
+--------------------------------
+* Archive
+	* ~/frozen-emissions/output/<YYYY-MM-DD>
+	* Current: ~/frozen-emissions/output/2020-05-05
+* CEDS
+	* Worktree: /pic/projects/GCAM/mnichol/ceds/worktrees/CEDS-frozen-em
+	* Interm grids: /pic/projects/GCAM/mnichol/ceds/worktrees/CEDS-frozen-em/intermediate-output/gridded-emissions
+	* Final grids: /pic/projects/GCAM/mnichol/ceds/worktrees/CEDS-frozen-em/final-emissions/gridded-emissions
+* Scripts
+	* Post-processing: /pic/projects/GCAM/mnichol/frozen-emissions/scripts/post-processing 
+	* Gridding: /pic/projects/GCAM/mnichol/frozen-emissions/scripts/gridding
+* DTN
+	* Bulk: /pic/dtn/data/gcam/frozen-emissions
+	* Sub-VOC: /pic/dtn/data/gcam/frozen-emissions/speciated-voc 
+
+
