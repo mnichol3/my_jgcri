@@ -1,6 +1,4 @@
 # CEDS Developer's Notes
-Matt Nicholson
-
 Last updated 13 May 2020
 
 # CEDS_Data
@@ -21,10 +19,26 @@ The CEDS version comparison script, `CEDS_version_comparison.R`, is located in `
 ### Execution
 * Due to how the relative paths within the script are constructed, the working directory must be the root `CEDS_Data` directory.
 
+### Output
+Ouput should be written to `.../CEDS/final-emissions/diagnostics/version-comparisons/` (line 1404), however in my experience it is instead written to `.../CEDS/final-emissions/diagnostics` for an unknown reason.
+
 ### Modification
 * CEDS versions
-  * 
+  * Change previous CEDS version
+    * Line 100 - `previous_CEDS_version`
+  * Change current CEDS version
+    * Line 108 - `current_CEDS_version`
+* CEDS emissions species
+  * Line 113 - `em_list <- c( "BC", "CH4", ...)`
+* CEDS directory path (Ex: use `CEDS-dev` directory; replace `<CEDS-dir>` with your desired CEDS directory.)
+  * Line 69   - `PARAM_DIR <- "../<CEDS_dir>/code/parameters/"`
+  * Line 82   - `PARAM_DIR <- "../<CEDS_dir>/code/parameters/"`
+  * Line 176  - `setwd( "../../<CEDS_dir>/input" )`
+  * Line 1383 - `setwd( "../../<CEDS_dir>/input" )`
+  * Line 1642 - `setwd( "../../../../CEDS/input" )`
+  
 
+  
 # R Dependency Packages
 ## Troubleshooting
 ### R package `farver` fails to compile on pic HPC cluster
