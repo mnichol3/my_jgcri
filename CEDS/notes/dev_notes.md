@@ -1,7 +1,29 @@
 # CEDS Developer's Notes
 Matt Nicholson
+
 Last updated 13 May 2020
 
+# CEDS_Data
+## Version Comparison Scripts
+The CEDS version comparison script, `CEDS_version_comparison.R`, is located in `CEDS_Data/code` or `CEDS_Data/code/version-comparison`.
+### Set Up
+* Your `CEDS` and `CEDS_Data` directories must be located within the same parent directory. You directory structure should look something like this:
+  ```
+  parent_dir/
+      |
+      |- CEDS/
+      |
+      | - CEDS_Data/
+  ```
+* Place the current CEDS version's emissions in `CEDS/final-emissions/current-versions`
+* Place the previous CEDS version's emissions in `CEDS/final-emissions/previous-versions` or `CEDS_Data/emissions-archive`???
+
+### Execution
+* Due to how the relative paths within the script are constructed, the working directory must be the root `CEDS_Data` directory.
+
+### Modification
+* CEDS versions
+  * 
 
 # R Dependency Packages
 ## Troubleshooting
