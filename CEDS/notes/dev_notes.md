@@ -1,5 +1,10 @@
 # CEDS Developer's Notes
-Last updated 13 May 2020
+Last updated 14 May 2020
+
+## Table of Contents
+* [R Dependency Packages](#r-dependency-packages)
+* [R Library Management with `renv`](r-library-management-with-renv)
+* [CEDS_Data](#CEDS_Data)
 
 # R Dependency Packages
 ## Version Validation
