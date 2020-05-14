@@ -61,7 +61,30 @@ CEDS only uses the `ncdf4` package within the gridding module to produce gridded
 ### Solution
 Load the `netcdf` library into your session via the command `module load netcdf`.
 
+---
+
+### Unable to Locate ICU4C library
+[ICU](http://userguide.icu-project.org/intro) is a cross-platform Unicode based globalization library. It includes support for locale-sensitive string comparison, date/time/number/currency/message formatting, text boundary detection, character set conversion and so on. 
+When attempting the install some R packages, such as `stringi v1.2.2`, the `ICU4C` library is unable to be located and the installation fails:
+```
+checking for pkg-config... /usr/bin/pkg-config
+checking with pkg-config for the system ICU4C... no
+*** pkg-config did not detect ICU4C-devel libraries installed
+*** Trying with "standard" fallback flags
+checking whether we may build an ICU4C-based project... no
+*** The available ICU4C cannot be used
+checking whether we may compile src/icu61/common/putil.cpp... no
+checking whether we may compile src/icu61/common/putil.cpp with -D_XPG6... no
+*** The ICU4C bundle could not be build. Upgrade your compiler flags.
+ERROR: configuration failed for package 'stringi'
+* removing '/pic/projects/GCAM/mnichol/ceds/CEDS-dev/renv/staging/1/stringi'
+Error: install of package 'stringi' failed
+```
+### Solution
+Cry.
+
 <br>
+
 
 # R Library Management with `renv`
 [`renv`](https://rstudio.github.io/renv/index.html) is an R package that allows users to create reproduceable, project-specific R libraries. This gives users the ability to create a CEDS-specific R library such that installing the older package versions CEDS requires will not affect their global R library.
@@ -70,6 +93,7 @@ Load the `netcdf` library into your session via the command `module load netcdf`
 **TODO**
 
 ## Troubleshooting
+This section contains troubleshooting solutions related **only** to the installation of packages and management of libraries via `renv`. For general R package installation troubleshooting, see the troubleshooting sub-section in [R Dependency Packages](#r-dependency-packages)
 
 ### Package cache linking
 `renv` has the ability to link packages from a user's global R library to their project-specific `renv` library, saving the time and space that re-downloading the same package and version a second time. However, once this cache link is established, removing the package from the global R library will break the link, causing errors in the `renv` library.
@@ -92,7 +116,9 @@ Manually install the package dependency in question into the project `renv` libr
 ```
 This forces `renv` to install the package in the local library, rather than attempting to create another cache link.
 
+
 <br>
+
 
 # CEDS_Data
 ## Version Comparison Scripts
