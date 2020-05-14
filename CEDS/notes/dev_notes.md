@@ -40,6 +40,20 @@ Ouput should be written to `.../CEDS/final-emissions/diagnostics/version-compari
 
   
 # R Dependency Packages
+## Version Validation
+Currently, CEDS attempts to validate the R dependency package version the user has installed. If the version of an installed package is below the required version, the following error will be raised:
+```
+Package <pkg_name> version <pkg_version> or greater is required.
+```
+
+Similarly, if CEDS is unable to load a required R package, the following error will be raised:
+```
+Couldn't load <pkg_name>. Please install.
+```
+
+CEDS R package version definitions are located in `CEDS/code/parameters/global_settings.R`
+
+
 ## Troubleshooting
 ### R package `farver` fails to compile on pic HPC cluster
 The installation of the `farcer` package may fail when attempting to compile, resulting in an error message that looks something like this:
