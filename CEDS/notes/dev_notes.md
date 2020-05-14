@@ -61,6 +61,39 @@ CEDS only uses the `ncdf4` package within the gridding module to produce gridded
 ### Solution
 Load the `netcdf` library into your session via the command `module load netcdf`.
 
+<br>
+
+# R Library Management with `renv`
+[`renv`](https://rstudio.github.io/renv/index.html) is an R package that allows users to create reproduceable, project-specific R libraries. This gives users the ability to create a CEDS-specific R library such that installing the older package versions CEDS requires will not affect their global R library.
+
+## Set Up & Installation
+**TODO**
+
+## Troubleshooting
+
+### Package cache linking
+`renv` has the ability to link packages from a user's global R library to their project-specific `renv` library, saving the time and space that re-downloading the same package and version a second time. However, once this cache link is established, removing the package from the global R library will break the link, causing errors in the `renv` library.
+
+An example error message is below. This message resulted from the cache link between the CEDS `renv` library and global R library being broken for the `stringi` package when attempting to load the `stringr` package, which depends on `stringi`:
+```
+Error in dyn.load(file, DLLpath = DLLpath, ...) :
+  unable to load shared object '/qfs/people/nich980/.local/share/renv/cache/v5/R-3.3/x86_64-pc-linux-gnu/stringi/1.2.2/e99d8d656980d2dd416a962ae55aec90/stringi/libs/stringi.so':
+  /usr/lib64/libstdc++.so.6: version `CXXABI_1.3.8' not found (required by /qfs/people/nich980/.local/share/renv/cache/v5/R-3.3/x86_64-pc-linux-gnu/stringi/1.2.2/e99d8d656980d2dd416a962ae55aec90/stringi/libs/stringi.so)
+Couldn't load 'stringr'. Please Install.
+```
+### Solution
+Manually install the package dependency in question into the project `renv` library, using the [`library`](https://rstudio.github.io/renv/reference/install.html#arguments) and [`rebuild`](https://rstudio.github.io/renv/reference/install.html#arguments) arguments:
+```R
+> .libPaths()
+[1] "/pic/projects/GCAM/mnichol/ceds/CEDS-dev/renv/library/R-3.3/x86_64-pc-linux-gnu"
+[2] "/tmp/RtmpofmJy0/renv-system-library"
+> lib <- .libPaths()[1]  # CEDS renv library
+> renv::install("stringi@1.2.2", library=lib, rebuild=TRUE)
+```
+This forces `renv` to install the package in the local library, rather than attempting to create another cache link.
+
+<br>
+
 # CEDS_Data
 ## Version Comparison Scripts
 The CEDS version comparison script, `CEDS_version_comparison.R`, is located in `CEDS_Data/code` or `CEDS_Data/code/version-comparison`.
