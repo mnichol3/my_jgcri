@@ -3,8 +3,8 @@ Last updated 14 May 2020
 
 ## Table of Contents
 * [R Dependency Packages](#r-dependency-packages)
-* [R Library Management with `renv`](r-library-management-with-renv)
-* [CEDS_Data](#CEDS_Data)
+* [R Library Management with renv](r-library-management-with-renv)
+* [CEDS_Data](#ceds-data)
 
 # R Dependency Packages
 ## Version Validation
@@ -91,7 +91,7 @@ Cry.
 <br>
 
 
-# R Library Management with `renv`
+# R Library Management with renv
 [`renv`](https://rstudio.github.io/renv/index.html) is an R package that allows users to create reproduceable, project-specific R libraries. This gives users the ability to create a CEDS-specific R library such that installing the older package versions CEDS requires will not affect their global R library.
 
 ## Set Up & Installation
