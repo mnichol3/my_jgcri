@@ -1,44 +1,6 @@
 # CEDS Developer's Notes
 Last updated 13 May 2020
 
-# CEDS_Data
-## Version Comparison Scripts
-The CEDS version comparison script, `CEDS_version_comparison.R`, is located in `CEDS_Data/code` or `CEDS_Data/code/version-comparison`.
-### Set Up
-* Your `CEDS` and `CEDS_Data` directories must be located within the same parent directory. You directory structure should look something like this:
-  ```
-  parent_dir/
-      |
-      |- CEDS/
-      |
-      | - CEDS_Data/
-  ```
-* Place the current CEDS version's emissions in `CEDS/final-emissions/current-versions`
-* Place the previous CEDS version's emissions in `CEDS/final-emissions/previous-versions` or `CEDS_Data/emissions-archive`???
-
-### Execution
-* Due to how the relative paths within the script are constructed, the working directory must be the root `CEDS_Data` directory.
-
-### Output
-Ouput should be written to `.../CEDS/final-emissions/diagnostics/version-comparisons/` (line 1404), however in my experience it is instead written to `.../CEDS/final-emissions/diagnostics` for an unknown reason.
-
-### Modification
-* CEDS versions
-  * Change previous CEDS version
-    * Line 100 - `previous_CEDS_version`
-  * Change current CEDS version
-    * Line 108 - `current_CEDS_version`
-* CEDS emissions species
-  * Line 113 - `em_list <- c( "BC", "CH4", ...)`
-* CEDS directory path (Ex: use `CEDS-dev` directory; replace `<CEDS-dir>` with your desired CEDS directory.)
-  * Line 69   - `PARAM_DIR <- "../<CEDS_dir>/code/parameters/"`
-  * Line 82   - `PARAM_DIR <- "../<CEDS_dir>/code/parameters/"`
-  * Line 176  - `setwd( "../../<CEDS_dir>/input" )`
-  * Line 1383 - `setwd( "../../<CEDS_dir>/input" )`
-  * Line 1642 - `setwd( "../../../../CEDS/input" )`
-  
-
-  
 # R Dependency Packages
 ## Version Validation
 Currently, CEDS attempts to validate the R dependency package version the user has installed. If the version of an installed package is below the required version, the following error will be raised:
@@ -98,3 +60,39 @@ CEDS only uses the `ncdf4` package within the gridding module to produce gridded
   
 ### Solution
 Load the `netcdf` library into your session via the command `module load netcdf`.
+
+# CEDS_Data
+## Version Comparison Scripts
+The CEDS version comparison script, `CEDS_version_comparison.R`, is located in `CEDS_Data/code` or `CEDS_Data/code/version-comparison`.
+### Set Up
+* Your `CEDS` and `CEDS_Data` directories must be located within the same parent directory. You directory structure should look something like this:
+  ```
+  parent_dir/
+      |
+      |- CEDS/
+      |
+      | - CEDS_Data/
+  ```
+* Place the current CEDS version's emissions in `CEDS/final-emissions/current-versions`
+* Place the previous CEDS version's emissions in `CEDS/final-emissions/previous-versions` or `CEDS_Data/emissions-archive`???
+
+### Execution
+* Due to how the relative paths within the script are constructed, the working directory must be the root `CEDS_Data` directory.
+
+### Output
+Ouput should be written to `.../CEDS/final-emissions/diagnostics/version-comparisons/` (line 1404), however in my experience it is instead written to `.../CEDS/final-emissions/diagnostics` for an unknown reason.
+
+### Modification
+* CEDS versions
+  * Change previous CEDS version
+    * Line 100 - `previous_CEDS_version`
+  * Change current CEDS version
+    * Line 108 - `current_CEDS_version`
+* CEDS emissions species
+  * Line 113 - `em_list <- c( "BC", "CH4", ...)`
+* CEDS directory path (Ex: use `CEDS-dev` directory; replace `<CEDS-dir>` with your desired CEDS directory.)
+  * Line 69   - `PARAM_DIR <- "../<CEDS_dir>/code/parameters/"`
+  * Line 82   - `PARAM_DIR <- "../<CEDS_dir>/code/parameters/"`
+  * Line 176  - `setwd( "../../<CEDS_dir>/input" )`
+  * Line 1383 - `setwd( "../../<CEDS_dir>/input" )`
+  * Line 1642 - `setwd( "../../../../CEDS/input" )`
