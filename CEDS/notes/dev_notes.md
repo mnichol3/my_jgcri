@@ -37,7 +37,7 @@ The installation of the `farcer` package may fail when attempting to compile, re
   ERROR: compilation failed for package 'farver'
   ```
 
-This is due to the package's C++ backend using features that the default `gcc` complier on `pic` is unaware of due to it being an older version. 
+This is due to the package's C++ backend using features that the default `gcc` complier on `pic` is unaware of due to it being an older version (`gcc 4.4.7` is still default as of 12 May 2020). 
 
 ### Solution
 Load a newer version (6.1.0 works as of 13 May 2020) of the `gcc` compiler via `module load gcc/6.1.0`.
