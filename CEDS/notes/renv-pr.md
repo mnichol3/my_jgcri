@@ -35,9 +35,10 @@ From an R session in your CEDS project root directory, run the following command
 
 This command will retrieve the library package metadata from `renv.lock` and install the packages to the project's private library located in `CEDS/renv/library/.../...`. 
 
----
 
-**Note**: The following packages were not discovered by renv's dependency scan (may not be required) but were installed anyway due to the package check in `parameters/global_settings.R`:
-  * reshape v0.8.6
-  * XML v3.98-1.5
-    * Installation of XML v3.98-1.5 failed; using v3.99-0.3 instead
+## Cache
+A defining feature of `renv` is the use of a global package cache, which is shared across all projects using `renv` on a machine. The cache saves time and disk space by allowing various projects to access the same packages, rather than installing the same packages and versions into separate projects. 
+
+When using the global package cache, the project library is formed as a directory of symlinks rather than a directory of installed R packages. Each `renv` project is isolated from other projects on a machine, but they can still re-use the same installed packages as needed. 
+
+The global package cache is enabled by default, however it can be disabled by setting `renv::settings$use.cache(FALSE)`. This will ensure that packages are then installed to project libraries directly, without attempting to link to the `renv` cache. 
