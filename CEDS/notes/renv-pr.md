@@ -31,7 +31,7 @@ By default, the `init` function will scan the project's source code for R depend
 ### 2. Install R Packages in CEDS-specific Library
 After initializing the library, users can install CEDS R dependencies defined in the lockfile via the [`renv::restore()`](https://rstudio.github.io/renv/reference/restore.html) function. 
 
-From an R session in your CEDS project root directory, run the following command: `renv::::restore()`.
+From an R session in your CEDS project root directory, run the following command: `renv::restore()`.
 
 This command will retrieve the library package metadata from `renv.lock` and install the packages to the project's private library located in `CEDS/renv/library/.../...`. 
 
