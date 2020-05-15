@@ -86,7 +86,11 @@ ERROR: configuration failed for package 'stringi'
 Error: install of package 'stringi' failed
 ```
 ### Solution
-Cry.
+Use the `install.packages` function to modify the compiler flags during the installation process:
+```R
+install.packages(c("stringi"),configure.args=c("--disable-cxx11"), lib=lib)
+```
+Use the `lib` argument to install the package into your project's `renv` library (can be found using `.libPaths()`). 
 
 <br>
 
