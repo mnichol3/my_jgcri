@@ -14,6 +14,11 @@ CEDS/
  |
  |- renv.lock
 ```
+Once initialized, a `library/` sub-directory would be added to `renv/`, which is where R packages would be installed.
+
+## Lockfiles
+`renv` utilizes [lockfiles](https://rstudio.github.io/renv/reference/lockfiles.html) to record the state of a project's library at some point in time. They contain package metadata, such as package names, versions, and sources, as well as the R version that was used to initialize the project. While normally generated with the [`snapshot()`](https://rstudio.github.io/renv/reference/snapshot.html)/[`restore()`](https://rstudio.github.io/renv/reference/restore.html) functions, lockfiles are written as `.json` which allows them to be edited by hand. The CEDS lockfile, `renv.lock`, is located in the root CEDS project directory. 
+
 ## User Installation
 Upon cloning the repository and navigating to the root CEDS directory, users can activate their `renv` library and install CEDS R dependencies. 
 
