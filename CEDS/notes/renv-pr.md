@@ -36,7 +36,7 @@ From an R session in your CEDS project root directory, run the following command
 This command will retrieve the library package metadata from `renv.lock` and install the packages to the project's private library located in `CEDS/renv/library/.../...`. 
 
 
-## Cache
+## Global Package Cache
 A defining feature of `renv` is the use of a [global package cache](https://rstudio.github.io/renv/articles/renv.html#cache), which is shared across all projects using `renv` on a machine. The cache saves time and disk space by allowing various projects to access the same packages, rather than installing the same packages and versions into separate projects. 
 
 When using the global package cache, the project library is formed as a directory of symlinks rather than a directory of installed R packages. Each `renv` project is isolated from other projects on a machine, but they can still re-use the same installed packages as needed. 
