@@ -28,7 +28,7 @@ To initialize a `renv` library for CEDS, open an R session in your CEDS root dir
 
 `renv::init()` calls [`renv::activate()`](https://rstudio.github.io/renv/reference/activate.html), which writes the infrastructure needed to ensure that R will load the CEDS R library on launch, among other things.
 
-### Install Packages in Separate Project R Library
+### Install R Packages in CEDS-specific Library
 After initializing the library, users can install CEDS R dependencies defined in the lockfile via the [`renv::restore()`](https://rstudio.github.io/renv/reference/restore.html) function. 
 
 From an R session in your CEDS project root directory, run the following command: `renv::::restore()`.
