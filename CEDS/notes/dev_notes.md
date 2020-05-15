@@ -1,5 +1,5 @@
 # CEDS Developer's Notes
-Last updated 14 May 2020
+Last updated 15 May 2020
 
 ## Table of Contents
 * [R Dependency Packages](#r-dependency-packages)
@@ -85,12 +85,19 @@ ERROR: configuration failed for package 'stringi'
 * removing '/pic/projects/GCAM/mnichol/ceds/CEDS-dev/renv/staging/1/stringi'
 Error: install of package 'stringi' failed
 ```
-### Solution
-Use the `install.packages` function to modify the compiler flags during the installation process:
+### Solution 1
+Load a newer compiler into your remote session: `module load gcc/7.3.0` (`gcc/7.3.0` works as of 15 May 2020).
+
+### Solution 2
+Use the `install.packages` function to modify the compiler flags used in the installation process:
 ```R
 install.packages(c("stringi"),configure.args=c("--disable-cxx11"), lib=lib)
 ```
 Use the `lib` argument to install the package into your project's `renv` library (can be found using `.libPaths()`). 
+
+**NOTE** This solution is fine for only installing `stringi`, however it may not completely resolve the problem when `stringi` is being installed as a dependency for another R package through `renv`.
+
+---
 
 <br>
 
