@@ -3,7 +3,8 @@ Last updated 15 May 2020
 
 ## Table of Contents
 * [R Dependency Packages](#r-dependency-packages)
-* [R Library Management with renv](r-library-management-with-renv)
+* [R Library Management with renv](#r-library-management-with-renv)
+* [CEDS Gridding Module](#ceds-gridding-module)
 * [CEDS_Data](#ceds-data)
 
 # R Dependency Packages
@@ -131,6 +132,50 @@ Manually install the package dependency in question into the project `renv` libr
 > renv::install("stringi@1.2.2", library=lib, rebuild=TRUE)
 ```
 This forces `renv` to install the package in the local library, rather than attempting to create another cache link.
+
+
+<br>
+
+
+# CEDS Gridding Module
+CEDS contains code to produce 0.5 degree x 0.5 degree gridded emissions, both annually as well as in multi-year chunks. The main gridding scripts are located in `code/module-G` while the core gridding and NetCDF I/O functions are located in `code/parameters/gridding_functions.R` and `code/parameters/nc_generation_functions.R`. 
+
+## Execution
+The gridding scripts can be called from the Makefile. However, it is important to note that the gridding targets in the Makefile call the `Module-H` functions before calling the actual gridding functions. 
+
+If you wish to *only* execute the gridding scripts, you must call them via the command line. For example, to grid and chunk `BC` bulk and biofuel emissions with custom `Module-H` intermediate output files, the command would be:
+```
+# Grid & chunk bulk emissions
+Rscript code/module-G/G1.1.grid_bulk_emissions.R BC --nosave --no-restore
+Rscript code/module-G/G2.1.chunk_bulk_emissions.R BC --nosave --no-restore 
+
+# Grid & chunk biofuel emissions
+Rscript code/module-G/G1.4.grid_solidbiofuel_emissions.R BC --nosave --no-restore
+Rscript code/module-G/G2.4.chunk_solidbiofuel_emissions.R BC --nosave --no-restore
+```
+
+## Gridding & Chunking
+As previously mentioned, the gridding module produces annual emissions grids (written to `intermediate-output/gridded-emissions`) as well as files containing multi-year chunks of gridded emissions (written to `final-emissions/gridded-emissions`). 
+
+### Gridding Start & End Years
+The year at which gridding and chunking starts is set by the `start_year` parameter in `code/parameters/common_data.R`. However, this is a mutable global variable that doesn't always get sourced, depending on how you call the gridding and chunking functions. `start_year` can be hard-coded within the `Module-G` gridding scripts, in the `gridding_initialize()` function call.
+
+For example, to ensure the gridding and chunking starts at 1950 and ends at 2014 (inclusive), within `code/module-G/G1.1.grid_bulk_emissions.R`, set the values of the `start_year` and `end_year` arguments in the `gridding_initialize()` function call:
+```
+gridding_initialize(grid_resolution = 0.5, 
+                    start_year = 1950,
+                    end_year = 2014,
+                    ...
+                    )
+```
+
+### Chunking Start & End Years
+To hard-code the start and end years of grid chunking, as well as the chunking interval, navigate to the `chunk_emissions()` function in `code/parameters/nc_generation_functions.R` and modify the `start_year`, `end_year`, and `chunk_years`, respectively.
+
+## Misc Notes
+* Saving Execution Time
+  * Only grid and chunk emissions for years you need. If you only want 1950-2014, don't waste time by starting the gridding & chunking all the way back at 1750.
+  * Users can re-run chunking without re-running gridding, as long as the annual grids are present in `intermediate-output/gridded-  emissions` for the years specified in the chunking script. 
 
 
 <br>
