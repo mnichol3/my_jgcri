@@ -48,7 +48,7 @@ Load a newer version (6.1.0 works as of 13 May 2020) of the `gcc` compiler via `
 ### R package `ncdf4` fails to compile on pic HPC cluster
 CEDS only uses the `ncdf4` package within the gridding module to produce gridded emissions files. The package is not required to produce CEDS emissions CSV files.
   
-`ncdf4` depends on an `nc-config` file that ships with the NetCDF library. The NetCDF C library is installed on pic, but is not loaded as a module at the beginning of a remote session. Attempting to install the R `ncdf4` package without the `netcdf` module loaded into your session can result in the following error:
+`ncdf4` depends on an `nc-config` file that ships with the [Unidata NetCDF library](https://www.unidata.ucar.edu/software/netcdf/). **The Unidata NetCDF library is a [documented system requirement](https://cran.r-project.org/web/packages/ncdf4/index.html) for the R ncdf4 package.** The NetCDF C library is installed on pic, but is not loaded as a module at the beginning of a remote session. Attempting to install the R `ncdf4` package without the `netcdf` module loaded into your session can result in the following error:
   ```
   Installing ncdf4 [1.16] ...
           FAILED
