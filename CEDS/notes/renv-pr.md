@@ -47,3 +47,102 @@ A defining feature of `renv` is the use of a [global package cache](https://rstu
 When using the global package cache, the project library is formed as a directory of symlinks rather than a directory of installed R packages. Each `renv` project is isolated from other projects on a machine, but they can still re-use the same installed packages as needed. 
 
 The global package cache is enabled by default, however it can be disabled by setting `renv::settings$use.cache(FALSE)`. This will ensure that packages are then installed to project libraries directly, without attempting to link to the `renv` cache. 
+
+## Troubleshooting
+### R package `farver` fails to compile on pic HPC cluster
+The installation of the `farcer` package may fail when attempting to compile, resulting in an error message that looks something like this:
+  ```
+  * installing *source* package 'farver' ...
+  ** package 'farver' successfully unpacked and MD5 sums checked
+  ** libs
+  g++ -std=gnu++0x -I"/share/apps/R/3.5.1/lib64/R/include" -DNDEBUG   -I/usr/local/include   -fpic  -I/share/apps/R/3.5.1/include -c     ColorSpace.cpp -o ColorSpace.o
+  In file included from ColorSpace.cpp:1:
+  ColorSpace.h:19: error: ISO C++ forbids initialization of member 'valid'
+  ColorSpace.h:19: error: making 'valid' static
+  ColorSpace.h:19: error: ISO C++ forbids in-class initialization of non-const static member 'valid'
+  make: *** [ColorSpace.o] Error 1
+  ERROR: compilation failed for package 'farver'
+  ```
+
+This is due to the package's C++ backend using features that the default `gcc` complier on `pic` is unaware of due to it being an older version (`gcc 4.4.7` is still default as of 12 May 2020). 
+
+#### Solution
+Load a newer version (6.1.0 works as of 13 May 2020) of the `gcc` compiler via `module load gcc/6.1.0`.
+  
+  ---
+  
+### R package `ncdf4` fails to install on pic HPC cluster
+CEDS only uses the `ncdf4` package within the gridding module to produce gridded emissions files. The package is not required to produce CEDS emissions CSV files.
+  
+`ncdf4` depends on an `nc-config` file that ships with the [Unidata NetCDF library](https://www.unidata.ucar.edu/software/netcdf/). The Unidata NetCDF library is a [documented system requirement](https://cran.r-project.org/web/packages/ncdf4/index.html) for the R ncdf4 package. The NetCDF C library is installed on pic, but is not loaded as a module at the beginning of a remote session. Attempting to install the R `ncdf4` package without the `netcdf` module loaded into your session can result in the following error:
+  ```
+  Installing ncdf4 [1.16] ...
+          FAILED
+  Error installing package 'ncdf4':
+  =================================
+  * installing *source* package 'ncdf4' ...
+  ** package 'ncdf4' successfully unpacked and MD5 sums checked
+  configure.ac: starting
+  checking for nc-config... no
+  -----------------------------------------------------------------------------------
+  Error, nc-config not found or not executable.  This is a script that comes with the
+  netcdf library, version 4.1-beta2 or later, and must be present for configuration
+  to succeed.
+  ```
+  
+#### Solution
+Load the `netcdf` library into your session via the command `module load netcdf`.
+
+---
+
+### Unable to locate ICU4C library
+[ICU](http://userguide.icu-project.org/intro) is a cross-platform Unicode based globalization library. It includes support for locale-sensitive string comparison, date/time/number/currency/message formatting, text boundary detection, character set conversion and so on. 
+When attempting the install some R packages, such as `stringi v1.2.2`, the `ICU4C` library is unable to be located and the installation fails:
+```
+checking for pkg-config... /usr/bin/pkg-config
+checking with pkg-config for the system ICU4C... no
+*** pkg-config did not detect ICU4C-devel libraries installed
+*** Trying with "standard" fallback flags
+checking whether we may build an ICU4C-based project... no
+*** The available ICU4C cannot be used
+checking whether we may compile src/icu61/common/putil.cpp... no
+checking whether we may compile src/icu61/common/putil.cpp with -D_XPG6... no
+*** The ICU4C bundle could not be build. Upgrade your compiler flags.
+ERROR: configuration failed for package 'stringi'
+* removing '/pic/projects/GCAM/mnichol/ceds/CEDS-dev/renv/staging/1/stringi'
+Error: install of package 'stringi' failed
+```
+#### Solution 1
+Load a newer compiler into your remote session: `module load gcc/7.3.0` (`gcc/7.3.0` works as of 15 May 2020).
+
+#### Solution 2
+Use the `install.packages` function to modify the compiler flags used in the installation process:
+```R
+install.packages(c("stringi"),configure.args=c("--disable-cxx11"), lib=lib)
+```
+Use the `lib` argument to install the package into your project's `renv` library (can be found using `.libPaths()`). 
+
+**NOTE** This solution is fine for only installing `stringi`, however it may not completely resolve the problem when `stringi` is being installed as a dependency for another R package through `renv`.
+
+---
+
+### R/renv unable to load shared object
+`renv` has the ability to link packages from a user's global R library to their project-specific `renv` library, saving the time and space that re-downloading the same package and version a second time. However, once this cache link is established, removing the package from the global R library will break the link, causing errors in the `renv` library.
+
+his error message below resulted from the cache link between the CEDS `renv` library and global R library being broken for the `stringi` package when attempting to load the `stringr` package, which depends on `stringi`:
+```
+Error in dyn.load(file, DLLpath = DLLpath, ...) :
+  unable to load shared object '/qfs/people/nich980/.local/share/renv/cache/v5/R-3.3/x86_64-pc-linux-gnu/stringi/1.2.2/e99d8d656980d2dd416a962ae55aec90/stringi/libs/stringi.so':
+  /usr/lib64/libstdc++.so.6: version `CXXABI_1.3.8' not found (required by /qfs/people/nich980/.local/share/renv/cache/v5/R-3.3/x86_64-pc-linux-gnu/stringi/1.2.2/e99d8d656980d2dd416a962ae55aec90/stringi/libs/stringi.so)
+Couldn't load 'stringr'. Please Install.
+```
+#### Solution
+Manually install the package dependency in question into the project `renv` library, using the [`library`](https://rstudio.github.io/renv/reference/install.html#arguments) and [`rebuild`](https://rstudio.github.io/renv/reference/install.html#arguments) arguments:
+```R
+> .libPaths()
+[1] "/pic/projects/GCAM/mnichol/ceds/CEDS-dev/renv/library/R-3.3/x86_64-pc-linux-gnu"
+[2] "/tmp/RtmpofmJy0/renv-system-library"
+> lib <- .libPaths()[1]  # CEDS renv library
+> renv::install("stringi@1.2.2", library=lib, rebuild=TRUE)
+```
+This forces `renv` to install the package in the local library, rather than attempting to create another cache link.
